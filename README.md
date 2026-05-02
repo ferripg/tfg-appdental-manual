@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AppDental (TFG) - Repositori Manual
 
-## Getting Started
+Aquest és el codi font pertanyent a la referència de programació manual del Treball de Final de Grau per al sistema de gestió clínica **AppDental**. Tota l'arquitectura està unificada en un monorepo combinant els serveis de xarxa en un Clúster de contenidors locals.
 
-First, run the development server:
+## 🛠 Requisits del Sistema
+Abans de descarregar i començar a treballar, assegureu-vos de tenir instal·lat:
+- **Docker i Docker Compose** (Per als gestors PostgreSQL i MinIO S3).
+- **Node.js LTS (v24)** (Recomanat per interactuar amb la consola Prisma local).
+- **Git**
+
+## 🚀 Arrencada de l'Entorn de Desenvolupament
+
+L'aplicació està completament orquestrada en contenidors (Base de Dades, Object Storage, Reverse Proxy web i App). Per posar-la en marxa des de zero:
+
+### 1. Variables d'Entorn
+L'entorn exigeix un arxiu invisible amb les claus directives a l'arrel de la carpeta anomenat `.env`. 
+*(Per motius de seguretat no figura a Github. Demaneu l'accés al .env.example i importeu la Base de Dades i l'Adreça Minio pròpia).*
+
+### 2. Construcció del Clúster (Docker)
+Des de la terminal, en l'arrel de projecte (`tfg-appdental-manual`), descarregueu i engegueu totes les imatges preconfigurades del fitxer `docker-compose.yml`:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up -d
+```
+Docker crearà els Volums Persistents pel vostre ordinador de manera que en el futur no perdrà dades encara que apagueu en sec.
+
+### 3. Migracions Inicials (ORM Prisma)
+Per assegurar que el PostgreSQL verge de Docker entén els taules mèdiques i per sincronitzar estats, cal instal·lar depèndencies locals de Node i tirar la comunicació d'Esquema:
+
+```bash
+npm install
+npx prisma migrate dev --name init
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 4. Accés als Serveis Locals
+Un cop les migracions han resolt favorablement, tota la xarxa estarà operativa. Com que treballem darrere d'un Proxy NGINX per gestionar asincronia:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **AppDental Client (FrontEnd):** [http://localhost](http://localhost) (Port Obert Web a NGINX).
+- **Servidor de Radiografies (MinIO):** [http://localhost/minio/](http://localhost/minio/) o `localhost:9001` (Credencials via .env).
+- **Taules Mèdiques Vives (Prisma Studio):** Executa `npx prisma studio` a la teva consola. Normalment s'obre per defecte a `http://localhost:5555`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Manteniment Rutinari d'Apagada
+Per no castigar el portàtil al deixar de programar ni consumir ports secundaris (Resta de Sprints):
+```bash
+docker compose down
+```
