@@ -25,7 +25,7 @@ model User {
   password             String?
   role                 Role      @default(OPERARI)
 
-  // Camps per a autenticació (UC-1..UC-10 del bloc 01_AUTH)
+  // Camps per a autenticació
   actiu                Boolean   @default(true)
   mustChangePassword   Boolean   @default(false)
   failedLoginAttempts  Int       @default(0)
@@ -37,7 +37,7 @@ model User {
   sessions             Session[]
   despeses             Despesa[]
 
-  // Inverses per a TancamentExercici (bloc 06)
+  // Inverses per a TancamentExercici
   tancaments           TancamentExercici[]
   reobriments          TancamentExercici[]  @relation("ReobertPer")
 
@@ -67,6 +67,10 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+// REQUERIDA per PrismaAdapter d'Auth.js v5 com a part de l'schema recomanat oficial.
+// Amb estratègia JWT (forçada per Credentials provider d'Auth.js v5) aquesta taula NO s'omple.
+// Es manté íntegra per coherència amb la doc i per facilitar l'addició d'OAuth providers + database
+// strategy en el futur (Sprint 4 o posterior).
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique

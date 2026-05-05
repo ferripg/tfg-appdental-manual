@@ -1,2 +1,21 @@
-// Singleton del Prisma Client. Implementació a MAN-2.
-export {};
+// Singleton del Prisma Client.
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+
+export const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    adapter,
+    log:
+      process.env.NODE_ENV === "production"
+        ? ["error"]
+        : ["query", "error", "warn"],
+  });
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
