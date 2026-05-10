@@ -1,7 +1,11 @@
-import { auth, signOut } from "~/auth";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   return (
     <div>
       <h1>Dashboard</h1>
@@ -9,7 +13,8 @@ export default async function DashboardPage() {
       <form
         action={async () => {
           "use server";
-          await signOut({ redirectTo: "/login" });
+          await auth.api.signOut({ headers: await headers() });
+          redirect("/login");
         }}
       >
         <button>Tancar sessió</button>

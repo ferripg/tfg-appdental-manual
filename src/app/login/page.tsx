@@ -4,8 +4,8 @@ import { authenticate } from "./actions";
 
 export default function LoginPage() {
   const [errorMessage, formAction, isPending] = useActionState(
-    authenticate,
-    undefined,
+    authenticate, // Server Action que s'executa al submit
+    undefined, // valor inicial d'errorMessage (cap error al primer render)
   );
   return (
     <form action={formAction}>

@@ -1,5 +1,5 @@
+import { auth } from "@/lib/auth";
 import { prisma } from "@/repositories/prisma-client";
-import * as authService from "@/services/auth-service";
 import { Role } from "@prisma/client";
 
 async function main() {
@@ -18,14 +18,21 @@ async function main() {
     return;
   }
 
-  await authService.createUser({
-    email,
-    password,
-    name: "Admin",
-    role: Role.ADMIN,
+  // Better Auth crea User + Account + hash password
+  await auth.api.signUpEmail({
+    body: {
+      email,
+      password,
+      name: "Admin",
+    },
   });
 
-  console.log(`Usuari admin creat: ${email}`);
+  // Better Auth no permet definir camps custom al signUp (role, etc.)
+  // Per això actualitzem després amb Prisma directe
+  await prisma.user.update({
+    where: { email },
+    data: { role: Role.ADMIN },
+  });
 }
 
 main()

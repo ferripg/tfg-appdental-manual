@@ -1,7 +1,8 @@
 "use server";
 
-import { AuthError } from "next-auth";
-import { signIn } from "~/auth";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 const LoginSchema = z.object({
@@ -21,13 +22,16 @@ export async function authenticate(
   if (!parsed.success) return "Dades invàlides";
 
   try {
-    await signIn("credentials", {
-      email: parsed.data.email,
-      password: parsed.data.password,
-      redirectTo: "/dashboard",
+    await auth.api.signInEmail({
+      body: {
+        email: parsed.data.email,
+        password: parsed.data.password,
+      },
+      headers: await headers(),
     });
-  } catch (error) {
-    if (error instanceof AuthError) return "Credencials invàlides";
-    throw error;
+  } catch {
+    return "Credencials invàlides";
   }
+
+  redirect("/dashboard");
 }
