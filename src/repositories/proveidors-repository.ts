@@ -1,0 +1,41 @@
+import { prisma } from "./prisma-client";
+import type { Prisma } from "@prisma/client";
+
+export async function findAll() {
+  return prisma.proveidor.findMany({
+    where: { actiu: true },
+    orderBy: { nom: "asc" },
+  });
+}
+
+export async function findById(id: string) {
+  return prisma.proveidor.findUnique({
+    where: { id },
+  });
+}
+
+export async function findByNif(nif: string) {
+  return prisma.proveidor.findUnique({
+    where: { nif },
+  });
+}
+
+export async function create(data: Prisma.ProveidorCreateInput) {
+  return prisma.proveidor.create({
+    data,
+  });
+}
+
+export async function update(id: string, data: Prisma.ProveidorUpdateInput) {
+  return prisma.proveidor.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function softDelete(id: string) {
+  return prisma.proveidor.update({
+    where: { id },
+    data: { actiu: false },
+  });
+}
