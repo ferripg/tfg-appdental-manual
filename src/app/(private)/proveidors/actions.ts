@@ -30,9 +30,9 @@ function parseFormData(formData: FormData) {
 }
 
 function cleanOptionals(data: ProveidorFormData) {
-  const result: Record<string, string | undefined> = { ...data };
+  const result: Record<string, string | null> = { ...data };
   for (const key of Object.keys(result)) {
-    if (result[key] === "") result[key] = undefined;
+    if (result[key] === "") result[key] = null;
   }
   return result;
 }

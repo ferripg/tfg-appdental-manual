@@ -9,7 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import * as proveidorsService from "@/services/proveidors-service";
-import { DeleteProveidorButton } from "./delete-proveidor-button";
+import { DeleteEntityButton } from "@/components/delete-entity-button";
+import { deleteProveidor } from "./actions";
 
 export default async function ProveidorsPage() {
   const proveidors = await proveidorsService.llistar();
@@ -63,7 +64,12 @@ export default async function ProveidorsPage() {
                       <Button asChild variant="outline" size="sm">
                         <Link href={`/proveidors/${p.id}`}>Editar</Link>
                       </Button>
-                      <DeleteProveidorButton id={p.id} nom={p.nom} />
+                      <DeleteEntityButton
+                        id={p.id}
+                        nom={p.nom}
+                        entityLabel="proveïdor"
+                        onDelete={deleteProveidor}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>

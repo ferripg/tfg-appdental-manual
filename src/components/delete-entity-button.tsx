@@ -14,25 +14,31 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteProveidor } from "./actions";
 
 type Props = {
   id: string;
   nom: string;
+  entityLabel: string;
+  onDelete: (id: string) => Promise<void>;
 };
 
-export function DeleteProveidorButton({ id, nom }: Props) {
+export function DeleteEntityButton({
+  id,
+  nom,
+  entityLabel,
+  onDelete,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleDelete() {
     startTransition(async () => {
       try {
-        await deleteProveidor(id);
-        toast.success(`Proveïdor "${nom}" eliminat`);
+        await onDelete(id);
+        toast.success(`${capitalitza(entityLabel)} "${nom}" eliminat`);
         setOpen(false);
       } catch {
-        toast.error("Error eliminant el proveïdor");
+        toast.error(`Error eliminant el ${entityLabel}`);
       }
     });
   }
@@ -46,14 +52,16 @@ export function DeleteProveidorButton({ id, nom }: Props) {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Eliminar proveïdor?</AlertDialogTitle>
+          <AlertDialogTitle>Eliminar {entityLabel}?</AlertDialogTitle>
           <AlertDialogDescription>
-            Estàs a punt d&apos;eliminar <strong>{nom}</strong>. Es marcarà com
-            a inactiu i no apareixerà als llistats.
+            Estàs a punt d&apos;eliminar <strong>{nom}</strong>. Es marcarà
+            com a inactiu i no apareixerà als llistats.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel·lar</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>
+            Cancel·lar
+          </AlertDialogCancel>
           <AlertDialogAction onClick={handleDelete} disabled={isPending}>
             {isPending ? "Eliminant..." : "Eliminar"}
           </AlertDialogAction>
@@ -61,4 +69,8 @@ export function DeleteProveidorButton({ id, nom }: Props) {
       </AlertDialogContent>
     </AlertDialog>
   );
+}
+
+function capitalitza(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }

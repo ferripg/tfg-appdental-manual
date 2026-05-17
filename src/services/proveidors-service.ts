@@ -12,10 +12,15 @@ export async function obtenir(id: string) {
 export async function crear(data: Prisma.ProveidorCreateInput) {
   const existeix = await proveidorsRepository.findByNif(data.nif);
   if (existeix) {
+    if (!existeix.actiu) {
+      return proveidorsRepository.update(existeix.id, {
+        ...data,
+        actiu: true,
+      });
+    }
     throw new Error(`Ja existeix un proveidor amb NIF ${data.nif}`);
-  } else {
-    return proveidorsRepository.create(data);
   }
+  return proveidorsRepository.create(data);
 }
 
 export async function actualitzar(

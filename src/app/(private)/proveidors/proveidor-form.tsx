@@ -28,6 +28,14 @@ export function ProveidorForm({ mode, initialData }: Props) {
 
   return (
     <form action={formAction} className="space-y-6">
+      {state.message && (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
+          <p className="text-sm font-medium text-destructive">
+            ⚠️ {state.message}
+          </p>
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Dades fiscals</CardTitle>
@@ -137,10 +145,6 @@ export function ProveidorForm({ mode, initialData }: Props) {
           </div>
         </CardContent>
       </Card>
-
-      {state.message && !state.errors && (
-        <p className="text-sm text-destructive">{state.message}</p>
-      )}
 
       <div className="flex items-center justify-end gap-3">
         <Button asChild variant="outline">
