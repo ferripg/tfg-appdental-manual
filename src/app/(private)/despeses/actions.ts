@@ -4,9 +4,9 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getSession, requireSession } from "@/lib/get-session";
-import { tipusDespesaSchema } from "@/schemas/tipus-despesa-schema";
-import * as tipusDespesaService from "@/services/tipus-despesa-service";
-import type { TipusDespesaFormData } from "@/schemas/tipus-despesa-schema";
+import { despesaSchema } from "@/schemas/despesa-schema";
+import * as despesaService from "@/services/despeses-service";
+import type { DespesaFormData } from "@/schemas/despesa-schema";
 import type { Prisma } from "@prisma/client";
 
 export type FormState = {
@@ -16,16 +16,17 @@ export type FormState = {
 
 function parseFormData(formData: FormData) {
   return {
-    codi: formData.get("codi")?.toString().trim() ?? "",
+    dataFactura: formData.get("dataFactura")?.toString().trim() ?? "",
+    dataPagament: formData.get("dataPagament")?.toString().trim() ?? "",
+    import: formData.get("import")?.toString().trim() ?? "",
+    numFactura: formData.get("numFactura")?.toString().trim() ?? "",
     descripcio: formData.get("descripcio")?.toString().trim() ?? "",
-    deduible: formData.getAll("deduible").includes("on"),
-    grup: formData.get("grup")?.toString().trim() ?? "",
-    concepte: formData.get("concepte")?.toString().trim() ?? "",
-    esAmortitzable: formData.getAll("esAmortitzable").includes("on"),
+    tipusDespesaId: formData.get("tipusDespesaId")?.toString().trim() ?? "",
+    proveidorId: formData.get("proveidorId")?.toString().trim() ?? "",
   };
 }
 
-function cleanOptionals(data: TipusDespesaFormData) {
+function cleanOptionals(data: DespesaFormData) {
   const result: Record<string, unknown> = { ...data };
   for (const key of Object.keys(result)) {
     if (result[key] === "") result[key] = null;
@@ -33,17 +34,12 @@ function cleanOptionals(data: TipusDespesaFormData) {
   return result;
 }
 
-export async function createTipusDespesa(
+export async function createDespesa(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const session = await getSession();
-  if (!session) {
-    return { message: "Has d'estar autenticat" };
-  }
-
   const raw = parseFormData(formData);
-  const parsed = tipusDespesaSchema.safeParse(raw);
+  const parsed = despesaSchema.safeParse(raw);
 
   if (!parsed.success) {
     return {
@@ -52,20 +48,26 @@ export async function createTipusDespesa(
     };
   }
 
+  const session = await getSession();
+  if (!session) {
+    return { message: "Has d'estar autenticat" };
+  }
+
   try {
     const cleaned = cleanOptionals(parsed.data);
-    await tipusDespesaService.crear(
-      cleaned as unknown as Prisma.TipusDespesaCreateInput,
+    const dataAmbUserId = { ...cleaned, userId: session.user.id };
+    await despesaService.crear(
+      dataAmbUserId as unknown as Prisma.DespesaCreateInput,
     );
   } catch (err) {
     return { message: err instanceof Error ? err.message : "Error desconegut" };
   }
 
-  revalidatePath("/tipus-despesa");
-  redirect("/tipus-despesa");
+  revalidatePath("/despeses");
+  redirect("/despeses");
 }
 
-export async function updateTipusDespesa(
+export async function updateDespesa(
   id: string,
   prevState: FormState,
   formData: FormData,
@@ -76,7 +78,7 @@ export async function updateTipusDespesa(
   }
 
   const raw = parseFormData(formData);
-  const parsed = tipusDespesaSchema.safeParse(raw);
+  const parsed = despesaSchema.safeParse(raw);
 
   if (!parsed.success) {
     return {
@@ -87,20 +89,20 @@ export async function updateTipusDespesa(
 
   try {
     const cleaned = cleanOptionals(parsed.data);
-    await tipusDespesaService.actualitzar(
+    await despesaService.actualitzar(
       id,
-      cleaned as unknown as Prisma.TipusDespesaUpdateInput,
+      cleaned as unknown as Prisma.DespesaUpdateInput,
     );
   } catch (err) {
     return { message: err instanceof Error ? err.message : "Error desconegut" };
   }
 
-  revalidatePath("/tipus-despesa");
-  redirect("/tipus-despesa");
+  revalidatePath("/despeses");
+  redirect("/despeses");
 }
 
-export async function deleteTipusDespesa(id: string) {
+export async function deleteDespesa(id: string) {
   await requireSession();
-  await tipusDespesaService.eliminar(id);
-  revalidatePath("/tipus-despesa");
+  await despesaService.eliminar(id);
+  revalidatePath("/despeses");
 }

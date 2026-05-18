@@ -1,9 +1,10 @@
 "use server";
 
 import { z } from "zod";
-import { proveidorSchema } from "@/schemas/proveidor-schema";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getSession, requireSession } from "@/lib/get-session";
+import { proveidorSchema } from "@/schemas/proveidor-schema";
 import * as proveidorsService from "@/services/proveidors-service";
 import type { ProveidorFormData } from "@/schemas/proveidor-schema";
 import type { Prisma } from "@prisma/client";
@@ -41,6 +42,11 @@ export async function createProveidor(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const session = await getSession();
+  if (!session) {
+    return { message: "Has d'estar autenticat" };
+  }
+
   const raw = parseFormData(formData);
   const parsed = proveidorSchema.safeParse(raw);
 
@@ -69,6 +75,11 @@ export async function updateProveidor(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const session = await getSession();
+  if (!session) {
+    return { message: "Has d'estar autenticat" };
+  }
+
   const raw = parseFormData(formData);
   const parsed = proveidorSchema.safeParse(raw);
 
@@ -94,6 +105,7 @@ export async function updateProveidor(
 }
 
 export async function deleteProveidor(id: string) {
+  await requireSession();
   await proveidorsService.eliminar(id);
   revalidatePath("/proveidors");
 }
