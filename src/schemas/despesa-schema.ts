@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 export const despesaSchema = z.object({
-  dataFactura: z.coerce.date({ message: "Data de factura obligatòria" }),
+  dataFactura: z.coerce
+    .date({ message: "Data de factura obligatòria" })
+    .refine((d) => d <= new Date(), {
+      message: "La data de factura no pot ser futura",
+    }),
   dataPagament: z.coerce.date().optional().or(z.literal("")),
   import: z.coerce.number().positive("L'import ha de ser positiu"),
   numFactura: z.string().optional().or(z.literal("")),

@@ -11,6 +11,7 @@ import {
 import * as despesesService from "@/services/despeses-service";
 import { DeleteEntityButton } from "@/components/delete-entity-button";
 import { deleteDespesa } from "./actions";
+import { DownloadFacturaButton } from "./download-factura-button";
 
 export default async function DespesesPage() {
   const despeses = await despesesService.llistar();
@@ -80,6 +81,11 @@ export default async function DespesesPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
+                      {d.fitxerKey && (
+                        <DownloadFacturaButton
+                          fitxerKey={d.fitxerKey}
+                        ></DownloadFacturaButton>
+                      )}
                       <Button asChild variant="outline" size="sm">
                         <Link href={`/despeses/${d.id}`}>Editar</Link>
                       </Button>

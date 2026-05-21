@@ -22,6 +22,11 @@ export default async function EditarDespesaPage({ params }: Props) {
     notFound();
   }
 
+  const initialData = {
+    ...despesa,
+    import: despesa.import.toString(),
+  };
+
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
@@ -44,7 +49,7 @@ export default async function EditarDespesaPage({ params }: Props) {
 
       <DespesaForm
         mode="edit"
-        initialData={despesa}
+        initialData={initialData as never}
         tipus={tipus}
         proveidors={proveidors}
       />

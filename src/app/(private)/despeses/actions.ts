@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getSession, requireSession } from "@/lib/get-session";
 import { despesaSchema } from "@/schemas/despesa-schema";
 import * as despesaService from "@/services/despeses-service";
+import { getPresignedUrl, uploadFactura } from "@/services/minio-service";
 import type { DespesaFormData } from "@/schemas/despesa-schema";
 import type { Prisma } from "@prisma/client";
 
@@ -34,10 +35,33 @@ function cleanOptionals(data: DespesaFormData) {
   return result;
 }
 
+async function handleFileUpload(
+  formData: FormData,
+): Promise<{ fitxerKey: string | null; error?: string }> {
+  const file = formData.get("factura") as File | null;
+  if (!file || file.size === 0) return { fitxerKey: null };
+
+  if (file.type !== "application/pdf") {
+    return { fitxerKey: null, error: "Només es permeten fitxers PDF" };
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    return { fitxerKey: null, error: "El fitxer no pot superar 5MB" };
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const fitxerKey = await uploadFactura(buffer, file.name, file.type);
+  return { fitxerKey };
+}
+
 export async function createDespesa(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const session = await getSession();
+  if (!session) {
+    return { message: "Has d'estar autenticat" };
+  }
+
   const raw = parseFormData(formData);
   const parsed = despesaSchema.safeParse(raw);
 
@@ -48,14 +72,16 @@ export async function createDespesa(
     };
   }
 
-  const session = await getSession();
-  if (!session) {
-    return { message: "Has d'estar autenticat" };
-  }
+  const { fitxerKey, error: fileError } = await handleFileUpload(formData);
+  if (fileError) return { message: fileError };
 
   try {
     const cleaned = cleanOptionals(parsed.data);
-    const dataAmbUserId = { ...cleaned, userId: session.user.id };
+    const dataAmbUserId = {
+      ...cleaned,
+      userId: session.user.id,
+      fitxerKey,
+    };
     await despesaService.crear(
       dataAmbUserId as unknown as Prisma.DespesaCreateInput,
     );
@@ -87,11 +113,15 @@ export async function updateDespesa(
     };
   }
 
+  const { fitxerKey, error: fileError } = await handleFileUpload(formData);
+  if (fileError) return { message: fileError };
+
   try {
     const cleaned = cleanOptionals(parsed.data);
+    const updateData = fitxerKey ? { ...cleaned, fitxerKey } : cleaned;
     await despesaService.actualitzar(
       id,
-      cleaned as unknown as Prisma.DespesaUpdateInput,
+      updateData as unknown as Prisma.DespesaUpdateInput,
     );
   } catch (err) {
     return { message: err instanceof Error ? err.message : "Error desconegut" };
@@ -105,4 +135,9 @@ export async function deleteDespesa(id: string) {
   await requireSession();
   await despesaService.eliminar(id);
   revalidatePath("/despeses");
+}
+
+export async function getFacturaUrl(fitxerKey: string): Promise<string> {
+  await requireSession();
+  return getPresignedUrl(fitxerKey);
 }

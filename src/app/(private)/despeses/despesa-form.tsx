@@ -7,12 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -20,11 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  createDespesa,
-  updateDespesa,
-  type FormState,
-} from "./actions";
+import { createDespesa, updateDespesa, type FormState } from "./actions";
 
 type Props = {
   mode: "create" | "edit";
@@ -198,6 +189,34 @@ export function DespesaForm({ mode, initialData, tipus, proveidors }: Props) {
             {state.errors?.descripcio && (
               <p className="text-sm text-destructive">
                 {state.errors.descripcio[0]}
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Factura adjunta</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="factura">PDF de la factura</Label>
+            <Input
+              id="factura"
+              name="factura"
+              type="file"
+              accept="application/pdf"
+            />
+            {initialData?.fitxerKey && (
+              <p className="text-sm text-muted-foreground">
+                Hi ha una factura adjunta. Si pujes una de nova, substituirà
+                l&apos;anterior.
+              </p>
+            )}
+            {state.errors?.factura && (
+              <p className="text-sm text-destructive">
+                {state.errors.factura[0]}
               </p>
             )}
           </div>
