@@ -52,6 +52,14 @@ export default async function PrivateLayout({
             >
               Tipus de despesa
             </Link>
+            {session.user.role === "ADMIN" && (
+              <Link
+                href="/admin/users"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Usuaris
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-4">

@@ -33,6 +33,11 @@ model User {
   lastLoginAt         DateTime?
   passwordChangedAt   DateTime?
 
+  // Camps requerits pel plugin admin de Better Auth (ban/unban usuaris)
+  banned     Boolean   @default(false)
+  banReason  String?
+  banExpires DateTime?
+
   accounts Account[]
   sessions Session[]
   despeses Despesa[]

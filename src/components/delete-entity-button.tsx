@@ -20,6 +20,7 @@ type Props = {
   nom: string;
   entityLabel: string;
   onDelete: (id: string) => Promise<void>;
+  mode?: "soft" | "hard";
 };
 
 export function DeleteEntityButton({
@@ -27,18 +28,31 @@ export function DeleteEntityButton({
   nom,
   entityLabel,
   onDelete,
+  mode = "soft",
 }: Props) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  const verb = mode === "soft" ? "Desactivar" : "Eliminar";
+  const verbPast = mode === "soft" ? "desactivat" : "eliminat";
+  const verbProgressive = mode === "soft" ? "Desactivant" : "Eliminant";
+  const description =
+    mode === "soft"
+      ? `Estàs a punt de desactivar ${nom}. Es marcarà com a inactiu i no apareixerà als llistats per defecte.`
+      : `Estàs a punt d'eliminar ${nom} permanentment. Aquesta acció no es pot desfer.`;
 
   function handleDelete() {
     startTransition(async () => {
       try {
         await onDelete(id);
-        toast.success(`${capitalitza(entityLabel)} "${nom}" eliminat`);
+        toast.success(`${capitalitza(entityLabel)} "${nom}" ${verbPast}`);
         setOpen(false);
-      } catch {
-        toast.error(`Error eliminant el ${entityLabel}`);
+      } catch (err) {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : `Error ${verbProgressive.toLowerCase()} el ${entityLabel}`,
+        );
       }
     });
   }
@@ -47,23 +61,20 @@ export function DeleteEntityButton({
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="outline" size="sm">
-          Eliminar
+          {verb}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Eliminar {entityLabel}?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Estàs a punt d&apos;eliminar <strong>{nom}</strong>. Es marcarà
-            com a inactiu i no apareixerà als llistats.
-          </AlertDialogDescription>
+          <AlertDialogTitle>
+            {verb} {entityLabel}?
+          </AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>
-            Cancel·lar
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Cancel·lar</AlertDialogCancel>
           <AlertDialogAction onClick={handleDelete} disabled={isPending}>
-            {isPending ? "Eliminant..." : "Eliminar"}
+            {isPending ? `${verbProgressive}...` : verb}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

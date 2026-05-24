@@ -94,6 +94,7 @@ export default async function DespesesPage() {
                         nom={`${formatDate(d.dataFactura)} — ${formatImport(d.import.toString())}`}
                         entityLabel="despesa"
                         onDelete={deleteDespesa}
+                        mode="hard"
                       />
                     </div>
                   </TableCell>
