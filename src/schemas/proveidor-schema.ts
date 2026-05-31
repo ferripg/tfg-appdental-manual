@@ -1,13 +1,12 @@
 import { z } from "zod";
+import { isValidIBAN } from "@/lib/validators/iban";
+import { isValidNIF } from "@/lib/validators/nif";
 
 export const proveidorSchema = z.object({
   nif: z
     .string()
     .min(1, "El NIF és obligatori")
-    .regex(
-      /^[A-Z0-9]{8,10}$/i,
-      "Format de NIF invàlid (8-10 caràcters alfanumèrics)",
-    ),
+    .refine(isValidNIF, "NIF no vàlid (comprova el dígit/lletra de control)"),
   nom: z.string().min(2, "El nom ha de tenir almenys 2 caràcters"),
   codiBis: z.string().optional().or(z.literal("")),
   adreca: z.string().optional().or(z.literal("")),
@@ -22,7 +21,10 @@ export const proveidorSchema = z.object({
   personaContacte: z.string().optional().or(z.literal("")),
   iban: z
     .string()
-    .regex(/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/i, "Format IBAN invàlid")
+    .refine(
+      (v) => v === "" || isValidIBAN(v),
+      "IBAN no vàlid (comprova el dígit de control mod-97)",
+    )
     .optional()
     .or(z.literal("")),
   notes: z.string().optional().or(z.literal("")),
