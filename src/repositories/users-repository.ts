@@ -1,9 +1,18 @@
 import { prisma } from "./prisma-client";
 import type { Prisma } from "@prisma/client";
 
-export async function findAll() {
+export async function findAll(filters?: { search?: string }) {
+  const { search } = filters ?? {};
   return prisma.user.findMany({
-    orderBy: { name: "asc" },
+    where: search
+      ? {
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+          ],
+        }
+      : {},
+    orderBy: [{ actiu: "desc" }, { name: "asc" }],
   });
 }
 
@@ -31,5 +40,12 @@ export async function softDeactivate(id: string) {
   return prisma.user.update({
     where: { id },
     data: { actiu: false },
+  });
+}
+
+export async function reactivate(id: string) {
+  return prisma.user.update({
+    where: { id },
+    data: { actiu: true },
   });
 }

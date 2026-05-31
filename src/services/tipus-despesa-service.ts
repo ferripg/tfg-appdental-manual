@@ -1,8 +1,15 @@
 import * as tipusDespesaRepository from "@/repositories/tipus-despesa-repository";
 import type { Prisma } from "@prisma/client";
 
-export async function llistar() {
-  return tipusDespesaRepository.findAll();
+export async function llistar(filters?: {
+  search?: string;
+  includeInactius?: boolean;
+}) {
+  return tipusDespesaRepository.findAll(filters);
+}
+
+export async function reactivar(id: string) {
+  return tipusDespesaRepository.reactivate(id);
 }
 
 export async function obtenir(id: string) {

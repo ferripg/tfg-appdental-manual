@@ -2,8 +2,8 @@ import { auth } from "@/lib/auth";
 import * as usersRepository from "@/repositories/users-repository";
 import type { Prisma, Role } from "@prisma/client";
 
-export async function llistar() {
-  return usersRepository.findAll();
+export async function llistar(filters?: { search?: string }) {
+  return usersRepository.findAll(filters);
 }
 
 export async function obtenir(id: string) {
@@ -37,4 +37,8 @@ export async function actualitzar(id: string, data: Prisma.UserUpdateInput) {
 
 export async function desactivar(id: string) {
   return usersRepository.softDeactivate(id);
+}
+
+export async function reactivar(id: string) {
+  return usersRepository.reactivate(id);
 }

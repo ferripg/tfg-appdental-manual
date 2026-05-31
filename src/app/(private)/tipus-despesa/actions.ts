@@ -62,7 +62,7 @@ export async function createTipusDespesa(
   }
 
   revalidatePath("/tipus-despesa");
-  redirect("/tipus-despesa");
+  redirect("/tipus-despesa?msg=creat");
 }
 
 export async function updateTipusDespesa(
@@ -96,11 +96,18 @@ export async function updateTipusDespesa(
   }
 
   revalidatePath("/tipus-despesa");
-  redirect("/tipus-despesa");
+  redirect("/tipus-despesa?msg=actualitzat");
 }
 
 export async function deleteTipusDespesa(id: string) {
   await requireSession();
   await tipusDespesaService.eliminar(id);
   revalidatePath("/tipus-despesa");
+}
+
+export async function reactivateTipusDespesa(id: string) {
+  await requireSession();
+  await tipusDespesaService.reactivar(id);
+  revalidatePath("/tipus-despesa");
+  redirect("/tipus-despesa?msg=reactivat");
 }

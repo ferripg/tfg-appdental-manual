@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -10,13 +11,30 @@ import {
 } from "@/components/ui/table";
 import * as usersService from "@/services/users-service";
 import { DeleteEntityButton } from "@/components/delete-entity-button";
-import { deactivateUser } from "./actions";
+import {
+  ResultToast,
+  type ResultToastMap,
+} from "@/components/result-toast";
+import { deactivateUser, reactivateUser } from "./actions";
 
-export default async function UsersPage() {
-  const users = await usersService.llistar();
+const TOAST_MAP: ResultToastMap = {
+  creat: { type: "success", text: "Usuari creat correctament" },
+  actualitzat: { type: "success", text: "Usuari actualitzat" },
+  reactivat: { type: "success", text: "Usuari reactivat" },
+};
+
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; msg?: string }>;
+}) {
+  const params = await searchParams;
+  const search = params.q?.trim() || undefined;
+  const users = await usersService.llistar({ search });
 
   return (
     <div className="space-y-6">
+      <ResultToast msg={params.msg} map={TOAST_MAP} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Usuaris</h1>
@@ -28,6 +46,23 @@ export default async function UsersPage() {
           <Link href="/admin/users/nou">Nou usuari</Link>
         </Button>
       </div>
+
+      <form method="GET" className="flex items-center gap-3">
+        <Input
+          name="q"
+          placeholder="Cerca per nom o email…"
+          defaultValue={search ?? ""}
+          className="max-w-sm"
+        />
+        <Button type="submit" variant="outline" size="sm">
+          Aplicar
+        </Button>
+        {search && (
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/admin/users">Netejar</Link>
+          </Button>
+        )}
+      </form>
 
       <div className="rounded-lg border bg-card">
         <Table>
@@ -73,16 +108,24 @@ export default async function UsersPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/users/${u.id}`}>Editar</Link>
-                      </Button>
-                      {u.actiu && (
-                        <DeleteEntityButton
-                          id={u.id}
-                          nom={u.name ?? u.email}
-                          entityLabel="usuari"
-                          onDelete={deactivateUser}
-                        />
+                      {u.actiu ? (
+                        <>
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={`/admin/users/${u.id}`}>Editar</Link>
+                          </Button>
+                          <DeleteEntityButton
+                            id={u.id}
+                            nom={u.name ?? u.email}
+                            entityLabel="usuari"
+                            onDelete={deactivateUser}
+                          />
+                        </>
+                      ) : (
+                        <form action={reactivateUser.bind(null, u.id)}>
+                          <Button type="submit" variant="outline" size="sm">
+                            Reactivar
+                          </Button>
+                        </form>
                       )}
                     </div>
                   </TableCell>

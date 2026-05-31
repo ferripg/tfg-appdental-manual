@@ -2,8 +2,14 @@ import * as despesesRepository from "@/repositories/despeses-repository";
 import { deleteFactura } from "@/services/minio-service";
 import type { Prisma } from "@prisma/client";
 
-export async function llistar() {
-  return despesesRepository.findAll();
+export async function llistar(filters?: {
+  search?: string;
+  desDe?: Date;
+  finsA?: Date;
+  proveidorId?: string;
+  tipusId?: string;
+}) {
+  return despesesRepository.findAll(filters);
 }
 
 export async function obtenir(id: string) {

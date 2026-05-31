@@ -1,8 +1,35 @@
 import { prisma } from "./prisma-client";
 import type { Prisma } from "@prisma/client";
 
-export async function findAll() {
+export async function findAll(filters?: {
+  search?: string;
+  desDe?: Date;
+  finsA?: Date;
+  proveidorId?: string;
+  tipusId?: string;
+}) {
+  const { search, desDe, finsA, proveidorId, tipusId } = filters ?? {};
   return prisma.despesa.findMany({
+    where: {
+      ...(search
+        ? {
+            OR: [
+              { numFactura: { contains: search, mode: "insensitive" } },
+              { descripcio: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+      ...(desDe || finsA
+        ? {
+            dataFactura: {
+              ...(desDe ? { gte: desDe } : {}),
+              ...(finsA ? { lte: finsA } : {}),
+            },
+          }
+        : {}),
+      ...(proveidorId ? { proveidorId } : {}),
+      ...(tipusId ? { tipusDespesaId: tipusId } : {}),
+    },
     include: { tipusDespesa: true, proveidor: true },
     orderBy: { dataFactura: "desc" },
   });

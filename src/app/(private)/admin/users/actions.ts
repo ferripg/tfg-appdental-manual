@@ -53,7 +53,7 @@ export async function createUser(
   }
 
   revalidatePath("/admin/users");
-  redirect("/admin/users");
+  redirect("/admin/users?msg=creat");
 }
 
 export async function updateUser(
@@ -95,7 +95,7 @@ export async function updateUser(
   }
 
   revalidatePath("/admin/users");
-  redirect("/admin/users");
+  redirect("/admin/users?msg=actualitzat");
 }
 
 export async function deactivateUser(id: string) {
@@ -108,4 +108,13 @@ export async function deactivateUser(id: string) {
 
   await usersService.desactivar(id);
   revalidatePath("/admin/users");
+}
+
+export async function reactivateUser(id: string) {
+  const session = await requireAdmin();
+  if (!session) throw new Error("No autoritzat");
+
+  await usersService.reactivar(id);
+  revalidatePath("/admin/users");
+  redirect("/admin/users?msg=reactivat");
 }

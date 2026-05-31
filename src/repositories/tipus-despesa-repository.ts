@@ -1,10 +1,24 @@
 import { prisma } from "./prisma-client";
 import type { Prisma } from "@prisma/client";
 
-export async function findAll() {
+export async function findAll(filters?: {
+  search?: string;
+  includeInactius?: boolean;
+}) {
+  const { search, includeInactius } = filters ?? {};
   return prisma.tipusDespesa.findMany({
-    where: { actiu: true },
-    orderBy: { codi: "asc" },
+    where: {
+      ...(includeInactius ? {} : { actiu: true }),
+      ...(search
+        ? {
+            OR: [
+              { codi: { contains: search, mode: "insensitive" } },
+              { descripcio: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+    orderBy: [{ actiu: "desc" }, { codi: "asc" }],
   });
 }
 
@@ -37,5 +51,12 @@ export async function softDelete(id: string) {
   return prisma.tipusDespesa.update({
     where: { id },
     data: { actiu: false },
+  });
+}
+
+export async function reactivate(id: string) {
+  return prisma.tipusDespesa.update({
+    where: { id },
+    data: { actiu: true },
   });
 }

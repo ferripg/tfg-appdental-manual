@@ -90,7 +90,7 @@ export async function createDespesa(
   }
 
   revalidatePath("/despeses");
-  redirect("/despeses");
+  redirect("/despeses?msg=creat");
 }
 
 export async function updateDespesa(
@@ -128,7 +128,7 @@ export async function updateDespesa(
   }
 
   revalidatePath("/despeses");
-  redirect("/despeses");
+  redirect("/despeses?msg=actualitzat");
 }
 
 export async function deleteDespesa(id: string) {

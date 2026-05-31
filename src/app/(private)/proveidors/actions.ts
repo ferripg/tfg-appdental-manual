@@ -67,7 +67,7 @@ export async function createProveidor(
   }
 
   revalidatePath("/proveidors");
-  redirect("/proveidors");
+  redirect("/proveidors?msg=creat");
 }
 
 export async function updateProveidor(
@@ -101,11 +101,18 @@ export async function updateProveidor(
   }
 
   revalidatePath("/proveidors");
-  redirect("/proveidors");
+  redirect("/proveidors?msg=actualitzat");
 }
 
 export async function deleteProveidor(id: string) {
   await requireSession();
   await proveidorsService.eliminar(id);
   revalidatePath("/proveidors");
+}
+
+export async function reactivateProveidor(id: string) {
+  await requireSession();
+  await proveidorsService.reactivar(id);
+  revalidatePath("/proveidors");
+  redirect("/proveidors?msg=reactivat");
 }

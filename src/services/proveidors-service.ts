@@ -1,8 +1,15 @@
 import * as proveidorsRepository from "@/repositories/proveidors-repository";
 import type { Prisma } from "@prisma/client";
 
-export async function llistar() {
-  return proveidorsRepository.findAll();
+export async function llistar(filters?: {
+  search?: string;
+  includeInactius?: boolean;
+}) {
+  return proveidorsRepository.findAll(filters);
+}
+
+export async function reactivar(id: string) {
+  return proveidorsRepository.reactivate(id);
 }
 
 export async function obtenir(id: string) {
