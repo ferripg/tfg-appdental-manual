@@ -52,6 +52,12 @@ export default async function PrivateLayout({
             >
               Tipus de despesa
             </Link>
+            <Link
+              href="/inventari"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Inventari
+            </Link>
             {session.user.role === "ADMIN" && (
               <Link
                 href="/admin/users"
