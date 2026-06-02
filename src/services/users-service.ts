@@ -36,6 +36,7 @@ export async function actualitzar(id: string, data: Prisma.UserUpdateInput) {
 }
 
 export async function desactivar(id: string) {
+  await usersRepository.deleteAllSessions(id);
   return usersRepository.softDeactivate(id);
 }
 

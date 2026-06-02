@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import { isAPIError } from "better-auth/api";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -29,7 +30,10 @@ export async function authenticate(
       },
       headers: await headers(),
     });
-  } catch {
+  } catch (err) {
+    if (isAPIError(err) && err.status === "FORBIDDEN") {
+      return err.message;
+    }
     return "Credencials invàlides";
   }
 

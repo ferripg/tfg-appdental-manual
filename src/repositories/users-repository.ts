@@ -43,6 +43,10 @@ export async function softDeactivate(id: string) {
   });
 }
 
+export async function deleteAllSessions(userId: string) {
+  return prisma.session.deleteMany({ where: { userId } });
+}
+
 export async function reactivate(id: string) {
   return prisma.user.update({
     where: { id },
