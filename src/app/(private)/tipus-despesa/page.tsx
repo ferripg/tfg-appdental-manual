@@ -118,8 +118,8 @@ export default async function TipusDespesaPage({
                   </TableCell>
                   <TableCell>{p.concepte ?? "—"}</TableCell>
                   <TableCell>{p.grup ?? "—"}</TableCell>
-                  <TableCell>{p.deduible ? "Sí" : "No"}</TableCell>
                   <TableCell>{p.esAmortitzable ? "Sí" : "No"}</TableCell>
+                  <TableCell>{p.deduible ? "Sí" : "No"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       {p.actiu ? (
