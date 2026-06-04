@@ -33,38 +33,6 @@ function cleanOptionals(data: InventariFormData) {
   return result;
 }
 
-export async function createInventari(
-  prevState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const session = await getSession();
-  if (!session) {
-    return { message: "Has d'estar autenticat" };
-  }
-
-  const raw = parseFormData(formData);
-  const parsed = inventariSchema.safeParse(raw);
-
-  if (!parsed.success) {
-    return {
-      message: "Hi ha errors al formulari",
-      errors: z.flattenError(parsed.error).fieldErrors,
-    };
-  }
-
-  try {
-    const cleaned = cleanOptionals(parsed.data);
-    await inventariService.crear(
-      cleaned as unknown as Prisma.InventariCreateInput,
-    );
-  } catch (err) {
-    return { message: err instanceof Error ? err.message : "Error desconegut" };
-  }
-
-  revalidatePath("/inventari");
-  redirect("/inventari?msg=creat");
-}
-
 export async function updateInventari(
   id: string,
   prevState: FormState,

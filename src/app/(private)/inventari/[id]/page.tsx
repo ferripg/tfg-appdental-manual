@@ -31,7 +31,7 @@ export default async function EditarInventariPage({
         </div>
       </div>
 
-      <InventariForm mode="edit" initialData={item} proveidors={proveidors} />
+      <InventariForm initialData={item} proveidors={proveidors} />
     </div>
   );
 }

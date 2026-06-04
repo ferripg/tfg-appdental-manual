@@ -14,11 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createInventari, updateInventari, type FormState } from "./actions";
+import { updateInventari, type FormState } from "./actions";
 
 type Props = {
-  mode: "create" | "edit";
-  initialData?: Inventari;
+  initialData: Inventari;
   proveidors: Proveidor[];
 };
 
@@ -27,14 +26,9 @@ function toInputDate(d?: Date | null) {
   return new Date(d).toISOString().slice(0, 10);
 }
 
-export function InventariForm({ mode, initialData, proveidors }: Props) {
-  const action =
-    mode === "create"
-      ? createInventari
-      : updateInventari.bind(null, initialData!.id);
-
+export function InventariForm({ initialData, proveidors }: Props) {
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
-    action,
+    updateInventari.bind(null, initialData.id),
     {},
   );
 
@@ -54,12 +48,22 @@ export function InventariForm({ mode, initialData, proveidors }: Props) {
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2 md:col-span-2">
+            <Label>Número d&apos;inventari</Label>
+            <Input
+              value={initialData.numInventari ?? "—"}
+              disabled
+              readOnly
+              className="font-mono"
+            />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
             <Label htmlFor="descripcio">Descripció *</Label>
             <Input
               id="descripcio"
               name="descripcio"
               placeholder="Cadira dental, equip de raigs X..."
-              defaultValue={initialData?.descripcio ?? ""}
+              defaultValue={initialData.descripcio}
             />
             {state.errors?.descripcio && (
               <p className="text-sm text-destructive">
@@ -74,7 +78,7 @@ export function InventariForm({ mode, initialData, proveidors }: Props) {
               id="dataAdquisicio"
               name="dataAdquisicio"
               type="date"
-              defaultValue={toInputDate(initialData?.dataAdquisicio)}
+              defaultValue={toInputDate(initialData.dataAdquisicio)}
             />
             {state.errors?.dataAdquisicio && (
               <p className="text-sm text-destructive">
@@ -88,7 +92,7 @@ export function InventariForm({ mode, initialData, proveidors }: Props) {
             <Input
               id="numFactura"
               name="numFactura"
-              defaultValue={initialData?.numFactura ?? ""}
+              defaultValue={initialData.numFactura ?? ""}
             />
             {state.errors?.numFactura && (
               <p className="text-sm text-destructive">
@@ -105,7 +109,7 @@ export function InventariForm({ mode, initialData, proveidors }: Props) {
               type="number"
               step="0.01"
               min="0"
-              defaultValue={initialData?.importAdquisicio?.toString() ?? ""}
+              defaultValue={initialData.importAdquisicio.toString()}
             />
             {state.errors?.importAdquisicio && (
               <p className="text-sm text-destructive">
@@ -124,7 +128,7 @@ export function InventariForm({ mode, initialData, proveidors }: Props) {
               min="0"
               max="100"
               placeholder="10"
-              defaultValue={initialData?.percAmortitzacio?.toString() ?? ""}
+              defaultValue={initialData.percAmortitzacio.toString()}
             />
             {state.errors?.percAmortitzacio && (
               <p className="text-sm text-destructive">
@@ -134,13 +138,10 @@ export function InventariForm({ mode, initialData, proveidors }: Props) {
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="proveidorId">Proveïdor</Label>
-            <Select
-              name="proveidorId"
-              defaultValue={initialData?.proveidorId ?? ""}
-            >
+            <Label htmlFor="proveidorId">Proveïdor *</Label>
+            <Select name="proveidorId" defaultValue={initialData.proveidorId ?? ""}>
               <SelectTrigger id="proveidorId">
-                <SelectValue placeholder="Tria un proveïdor (opcional)..." />
+                <SelectValue placeholder="Tria un proveïdor..." />
               </SelectTrigger>
               <SelectContent>
                 {proveidors.map((p) => (
@@ -164,11 +165,7 @@ export function InventariForm({ mode, initialData, proveidors }: Props) {
           <Link href="/inventari">Cancel·lar</Link>
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending
-            ? "Guardant..."
-            : mode === "create"
-              ? "Crear bé"
-              : "Guardar canvis"}
+          {isPending ? "Guardant..." : "Guardar canvis"}
         </Button>
       </div>
     </form>

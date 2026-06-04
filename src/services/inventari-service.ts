@@ -1,5 +1,22 @@
 import * as inventariRepository from "@/repositories/inventari-repository";
-import type { Prisma, EstatInventari } from "@prisma/client";
+import type { Despesa, Prisma, EstatInventari } from "@prisma/client";
+
+// Genera un bé d'inventari a partir d'una despesa amortitzable. El % es crea
+// a 0 (l'usuari l'edita després). Reutilitzat per l'auto-create (al crear la
+// despesa) i pel retroactiu (al marcar un tipus com a amortitzable).
+export async function generarBePerDespesa(despesa: Despesa) {
+  const numInventari = await inventariRepository.nextNumInventari();
+  return inventariRepository.create({
+    numInventari,
+    descripcio: despesa.descripcio ?? despesa.numFactura ?? "Bé amortitzable",
+    dataAdquisicio: despesa.dataFactura,
+    importAdquisicio: despesa.import,
+    percAmortitzacio: 0,
+    numFactura: despesa.numFactura,
+    proveidorId: despesa.proveidorId,
+    despesaId: despesa.id,
+  } as unknown as Prisma.InventariCreateInput);
+}
 
 export async function llistar(filters?: {
   search?: string;
@@ -11,10 +28,6 @@ export async function llistar(filters?: {
 
 export async function obtenir(id: string) {
   return inventariRepository.findById(id);
-}
-
-export async function crear(data: Prisma.InventariCreateInput) {
-  return inventariRepository.create(data);
 }
 
 export async function actualitzar(id: string, data: Prisma.InventariUpdateInput) {

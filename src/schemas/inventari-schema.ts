@@ -15,7 +15,7 @@ export const inventariSchema = z.object({
     .min(0, "El percentatge no pot ser negatiu")
     .max(100, "El percentatge no pot superar el 100%"),
   numFactura: z.string().optional().or(z.literal("")),
-  proveidorId: z.string().optional().or(z.literal("")),
+  proveidorId: z.string().min(1, "El proveïdor és obligatori"),
 });
 
 export type InventariFormData = z.infer<typeof inventariSchema>;

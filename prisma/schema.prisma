@@ -180,6 +180,7 @@ enum EstatInventari {
 
 model Inventari {
   id                String         @id @default(cuid())
+  numInventari      String?        @unique // etiqueta llegible del bé (INV-0001)
   dataAdquisicio    DateTime
   descripcio        String
   importAdquisicio  Decimal        @db.Decimal(12, 2)

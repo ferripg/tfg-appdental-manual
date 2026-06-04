@@ -42,6 +42,14 @@ export async function findById(id: string) {
   });
 }
 
+// Despeses d'un tipus que encara no tenen bé d'inventari associat. S'usa per
+// generar els béns retroactivament quan un tipus es marca com a amortitzable.
+export async function findByTipusSenseInventari(tipusId: string) {
+  return prisma.despesa.findMany({
+    where: { tipusDespesaId: tipusId, inventari: null },
+  });
+}
+
 export async function create(data: Prisma.DespesaCreateInput) {
   return prisma.despesa.create({
     data,

@@ -1,4 +1,6 @@
 import * as tipusDespesaRepository from "@/repositories/tipus-despesa-repository";
+import * as despesesRepository from "@/repositories/despeses-repository";
+import * as inventariService from "@/services/inventari-service";
 import type { Prisma } from "@prisma/client";
 
 export async function llistar(filters?: {
@@ -40,7 +42,27 @@ export async function actualitzar(
       throw new Error(`Ja existeix un tipus de despesa amb codi ${data.codi}`);
     }
   }
-  return tipusDespesaRepository.update(id, data);
+  const tipus = await tipusDespesaRepository.update(id, data);
+
+  // Retroactiu: si el tipus és amortitzable, generem els béns d'inventari per
+  // a les despeses existents d'aquest tipus que encara no en tenen. És
+  // idempotent (només crea els que falten). En try/catch perquè un error aquí
+  // no ha de tombar l'actualització del tipus.
+  if (tipus.esAmortitzable) {
+    try {
+      const despeses = await despesesRepository.findByTipusSenseInventari(id);
+      for (const despesa of despeses) {
+        await inventariService.generarBePerDespesa(despesa);
+      }
+    } catch (err) {
+      console.error(
+        "[tipus-despesa-service] Error generant béns retroactius:",
+        err,
+      );
+    }
+  }
+
+  return tipus;
 }
 
 export async function eliminar(id: string) {

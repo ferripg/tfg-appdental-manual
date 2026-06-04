@@ -77,12 +77,10 @@ export default async function InventariPage({
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Inventari</h1>
           <p className="text-muted-foreground">
-            Béns amortitzables de la clínica
+            Béns amortitzables (es generen automàticament des de les despeses
+            amortitzables)
           </p>
         </div>
-        <Button asChild>
-          <Link href="/inventari/nou">Nou bé</Link>
-        </Button>
       </div>
 
       <form
@@ -140,6 +138,7 @@ export default async function InventariPage({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Núm.</TableHead>
               <TableHead>Descripció</TableHead>
               <TableHead>Data adquisició</TableHead>
               <TableHead>Import</TableHead>
@@ -153,7 +152,7 @@ export default async function InventariPage({
             {items.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="text-center text-muted-foreground py-8"
                 >
                   No hi ha béns.{" "}
@@ -167,6 +166,9 @@ export default async function InventariPage({
                 const badge = ESTAT_BADGE[b.estat];
                 return (
                   <TableRow key={b.id}>
+                    <TableCell className="font-mono text-sm">
+                      {b.numInventari ?? "—"}
+                    </TableCell>
                     <TableCell className="font-medium">{b.descripcio}</TableCell>
                     <TableCell>{formatDate(b.dataAdquisicio)}</TableCell>
                     <TableCell className="font-mono">
