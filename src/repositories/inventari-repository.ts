@@ -50,9 +50,6 @@ export async function remove(id: string) {
   return prisma.inventari.delete({ where: { id } });
 }
 
-// Genera el següent número d'inventari llegible (INV-0001, INV-0002...).
-// Busca el màxim existent i hi suma 1, per no col·lisionar amb la restricció
-// d'unicitat encara que s'hagin eliminat béns pel mig.
 export async function nextNumInventari(): Promise<string> {
   const last = await prisma.inventari.findFirst({
     where: { numInventari: { not: null } },
@@ -63,4 +60,27 @@ export async function nextNumInventari(): Promise<string> {
     ? parseInt(last.numInventari.replace(/\D/g, ""), 10)
     : 0;
   return `INV-${String(lastNum + 1).padStart(4, "0")}`;
+}
+
+// Béns que poden amortitzar: actius, amb percentatge > 0 i adquirits durant
+// l'exercici que es tanca o abans (un bé del 2026 no s'amortitza al tancar 2025).
+export async function findAmortitzables(finsExercici: number) {
+  return prisma.inventari.findMany({
+    where: {
+      estat: "ACTIU",
+      percAmortitzacio: { gt: 0 },
+      dataAdquisicio: { lt: new Date(`${finsExercici + 1}-01-01`) },
+    },
+  });
+}
+
+export async function updateAmortitzacio(
+  id: string,
+  importAmortitzat: Prisma.Decimal,
+  importUltimaAmort: Prisma.Decimal | null,
+) {
+  return prisma.inventari.update({
+    where: { id },
+    data: { importAmortitzat, importUltimaAmort },
+  });
 }

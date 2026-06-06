@@ -58,6 +58,12 @@ export default async function PrivateLayout({
             >
               Inventari
             </Link>
+            <Link
+              href="/amortitzacions"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Amortitzacions
+            </Link>
             {session.user.role === "ADMIN" && (
               <Link
                 href="/admin/users"

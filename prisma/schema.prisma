@@ -42,10 +42,6 @@ model User {
   sessions Session[]
   despeses Despesa[]
 
-  // Inverses per a TancamentExercici
-  tancaments  TancamentExercici[]
-  reobriments TancamentExercici[] @relation("ReobertPer")
-
   // Inversa per a AuditLog (auditoria de tot el CRUD)
   auditLogs AuditLog[]
 
@@ -212,23 +208,6 @@ model Amortitzacio {
   createdAt DateTime @default(now())
 
   @@id([inventariId, exercici])
-}
-
-// =============================================================================
-// TANCAMENT FISCAL
-// =============================================================================
-
-model TancamentExercici {
-  exercici      Int      @id
-  dataTancament DateTime @default(now())
-  tancatPerId   String
-  tancatPer     User     @relation(fields: [tancatPerId], references: [id])
-
-  dataReobertura DateTime?
-  reobertPerId   String?
-  reobertPer     User?     @relation("ReobertPer", fields: [reobertPerId], references: [id])
-
-  notes String? @db.Text
 }
 
 // =============================================================================

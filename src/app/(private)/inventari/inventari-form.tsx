@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import type { Inventari, Proveidor } from "@prisma/client";
+import type { Proveidor } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,8 +16,19 @@ import {
 } from "@/components/ui/select";
 import { updateInventari, type FormState } from "./actions";
 
+// Imports com a string perquè els Decimal de Prisma no es poden passar
+// d'un Server Component a un Client Component (cal serialitzar-los abans).
 type Props = {
-  initialData: Inventari;
+  initialData: {
+    id: string;
+    numInventari: string | null;
+    descripcio: string;
+    dataAdquisicio: Date;
+    numFactura: string | null;
+    importAdquisicio: string;
+    percAmortitzacio: string;
+    proveidorId: string | null;
+  };
   proveidors: Proveidor[];
 };
 
@@ -109,7 +120,7 @@ export function InventariForm({ initialData, proveidors }: Props) {
               type="number"
               step="0.01"
               min="0"
-              defaultValue={initialData.importAdquisicio.toString()}
+              defaultValue={initialData.importAdquisicio}
             />
             {state.errors?.importAdquisicio && (
               <p className="text-sm text-destructive">
@@ -128,7 +139,7 @@ export function InventariForm({ initialData, proveidors }: Props) {
               min="0"
               max="100"
               placeholder="10"
-              defaultValue={initialData.percAmortitzacio.toString()}
+              defaultValue={initialData.percAmortitzacio}
             />
             {state.errors?.percAmortitzacio && (
               <p className="text-sm text-destructive">

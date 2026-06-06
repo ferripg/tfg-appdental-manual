@@ -19,6 +19,19 @@ export default async function EditarInventariPage({
 
   if (!item) notFound();
 
+  // Serialitzem els Decimal a string: no es poden passar d'un Server Component
+  // a un Client Component (el formulari) directament.
+  const initialData = {
+    id: item.id,
+    numInventari: item.numInventari,
+    descripcio: item.descripcio,
+    dataAdquisicio: item.dataAdquisicio,
+    numFactura: item.numFactura,
+    importAdquisicio: item.importAdquisicio.toString(),
+    percAmortitzacio: item.percAmortitzacio.toString(),
+    proveidorId: item.proveidorId,
+  };
+
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
@@ -31,7 +44,7 @@ export default async function EditarInventariPage({
         </div>
       </div>
 
-      <InventariForm initialData={item} proveidors={proveidors} />
+      <InventariForm initialData={initialData} proveidors={proveidors} />
     </div>
   );
 }

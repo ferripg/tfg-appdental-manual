@@ -50,6 +50,15 @@ export async function findByTipusSenseInventari(tipusId: string) {
   });
 }
 
+// Any de la despesa més antiga registrada (primer exercici a tancar).
+export async function anyDespesaMesAntiga(): Promise<number | null> {
+  const d = await prisma.despesa.findFirst({
+    orderBy: { dataFactura: "asc" },
+    select: { dataFactura: true },
+  });
+  return d ? d.dataFactura.getFullYear() : null;
+}
+
 export async function create(data: Prisma.DespesaCreateInput) {
   return prisma.despesa.create({
     data,
