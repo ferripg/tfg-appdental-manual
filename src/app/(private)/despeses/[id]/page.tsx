@@ -49,7 +49,7 @@ export default async function EditarDespesaPage({ params }: Props) {
 
       <DespesaForm
         mode="edit"
-        initialData={initialData as never}
+        initialData={initialData}
         tipus={tipus}
         proveidors={proveidors}
       />

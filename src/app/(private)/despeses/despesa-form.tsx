@@ -17,9 +17,11 @@ import {
 } from "@/components/ui/select";
 import { createDespesa, updateDespesa, type FormState } from "./actions";
 
+// `import` com a string: el Decimal de Prisma no es pot passar d'un Server
+// Component a un Client Component (cal serialitzar-lo al servidor abans).
 type Props = {
   mode: "create" | "edit";
-  initialData?: Despesa;
+  initialData?: Omit<Despesa, "import"> & { import: string };
   tipus: TipusDespesa[];
   proveidors: Proveidor[];
 };
