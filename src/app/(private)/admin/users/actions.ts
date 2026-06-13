@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/get-session";
+import { checkPermission } from "@/lib/get-session";
 import { userCreateSchema, userUpdateSchema } from "@/schemas/user-schema";
 import * as usersService from "@/services/users-service";
 import type { Role } from "@prisma/client";
@@ -13,19 +13,12 @@ export type FormState = {
   errors?: Record<string, string[]>;
 };
 
-async function requireAdmin() {
-  const session = await getSession();
-  if (!session) return null;
-  if (session.user.role !== "ADMIN") return null;
-  return session;
-}
-
 export async function createUser(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const session = await requireAdmin();
-  if (!session) return { message: "No autoritzat" };
+  const perm = await checkPermission("user", "create");
+  if (!perm.ok) return { message: perm.message };
 
   const raw = {
     email: formData.get("email")?.toString().trim() ?? "",
@@ -61,8 +54,8 @@ export async function updateUser(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const session = await requireAdmin();
-  if (!session) return { message: "No autoritzat" };
+  const perm = await checkPermission("user", "update");
+  if (!perm.ok) return { message: perm.message };
 
   const raw = {
     email: formData.get("email")?.toString().trim() ?? "",
@@ -78,9 +71,10 @@ export async function updateUser(
     };
   }
 
-  if (session.user.id === id && parsed.data.role !== "ADMIN") {
+  if (perm.session.user.id === id && parsed.data.role !== "ADMIN") {
     return {
-      message: "No pots canviar el teu propi rol d'ADMIN (deixaries la app sense administrador)",
+      message:
+        "No pots canviar el teu propi rol d'ADMIN (deixaries la app sense administrador)",
     };
   }
 
@@ -99,10 +93,10 @@ export async function updateUser(
 }
 
 export async function deactivateUser(id: string) {
-  const session = await requireAdmin();
-  if (!session) throw new Error("No autoritzat");
+  const perm = await checkPermission("user", "delete");
+  if (!perm.ok) throw new Error(perm.message);
 
-  if (session.user.id === id) {
+  if (perm.session.user.id === id) {
     throw new Error("No pots desactivar-te a tu mateix");
   }
 
@@ -111,8 +105,8 @@ export async function deactivateUser(id: string) {
 }
 
 export async function reactivateUser(id: string) {
-  const session = await requireAdmin();
-  if (!session) throw new Error("No autoritzat");
+  const perm = await checkPermission("user", "update");
+  if (!perm.ok) throw new Error(perm.message);
 
   await usersService.reactivar(id);
   revalidatePath("/admin/users");

@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSession, requireSession } from "@/lib/get-session";
+import { checkPermission } from "@/lib/get-session";
 import { tipusDespesaSchema } from "@/schemas/tipus-despesa-schema";
 import * as tipusDespesaService from "@/services/tipus-despesa-service";
 import type { TipusDespesaFormData } from "@/schemas/tipus-despesa-schema";
@@ -37,10 +37,8 @@ export async function createTipusDespesa(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const session = await getSession();
-  if (!session) {
-    return { message: "Has d'estar autenticat" };
-  }
+  const perm = await checkPermission("tipusDespesa", "create");
+  if (!perm.ok) return { message: perm.message };
 
   const raw = parseFormData(formData);
   const parsed = tipusDespesaSchema.safeParse(raw);
@@ -70,10 +68,8 @@ export async function updateTipusDespesa(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const session = await getSession();
-  if (!session) {
-    return { message: "Has d'estar autenticat" };
-  }
+  const perm = await checkPermission("tipusDespesa", "update");
+  if (!perm.ok) return { message: perm.message };
 
   const raw = parseFormData(formData);
   const parsed = tipusDespesaSchema.safeParse(raw);
@@ -100,13 +96,15 @@ export async function updateTipusDespesa(
 }
 
 export async function deleteTipusDespesa(id: string) {
-  await requireSession();
+  const perm = await checkPermission("tipusDespesa", "delete");
+  if (!perm.ok) throw new Error(perm.message);
   await tipusDespesaService.eliminar(id);
   revalidatePath("/tipus-despesa");
 }
 
 export async function reactivateTipusDespesa(id: string) {
-  await requireSession();
+  const perm = await checkPermission("tipusDespesa", "update");
+  if (!perm.ok) throw new Error(perm.message);
   await tipusDespesaService.reactivar(id);
   revalidatePath("/tipus-despesa");
   redirect("/tipus-despesa?msg=reactivat");

@@ -1,5 +1,6 @@
 import * as amortitzacionsService from "@/services/amortitzacions-service";
 import * as inventariService from "@/services/inventari-service";
+import { currentUserCan } from "@/lib/get-session";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -30,6 +31,8 @@ export default async function AmortitzacionsPage({
     amortitzacionsService.estatExercicis(),
   ]);
 
+  const potGestionar = await currentUserCan("amortitzacio", "create");
+
   const formatImport = (n: number | string) =>
     Number(n).toLocaleString("ca-ES", { style: "currency", currency: "EUR" });
 
@@ -51,21 +54,23 @@ export default async function AmortitzacionsPage({
         </p>
       </div>
 
-      <form
-        action={generarAmortitzacionsAction}
-        className="flex items-center gap-3 rounded-lg border bg-card p-4"
-      >
-        <input type="hidden" name="exercici" value={estat.proximAGenerar} />
-        <p className="text-sm text-muted-foreground">
-          Pròxim exercici:{" "}
-          <span className="font-semibold text-foreground">
-            {estat.proximAGenerar}
-          </span>
-        </p>
-        <Button type="submit">
-          Generar amortitzacions {estat.proximAGenerar}
-        </Button>
-      </form>
+      {potGestionar && (
+        <form
+          action={generarAmortitzacionsAction}
+          className="flex items-center gap-3 rounded-lg border bg-card p-4"
+        >
+          <input type="hidden" name="exercici" value={estat.proximAGenerar} />
+          <p className="text-sm text-muted-foreground">
+            Pròxim exercici:{" "}
+            <span className="font-semibold text-foreground">
+              {estat.proximAGenerar}
+            </span>
+          </p>
+          <Button type="submit">
+            Generar amortitzacions {estat.proximAGenerar}
+          </Button>
+        </form>
+      )}
 
       <div>
         <h2 className="text-xl font-semibold mb-3">
@@ -158,7 +163,7 @@ export default async function AmortitzacionsPage({
                     </TableCell>
                     <TableCell>{e.comptador}</TableCell>
                     <TableCell className="text-right">
-                      {e.exercici === estat.ultimGenerat && (
+                      {potGestionar && e.exercici === estat.ultimGenerat && (
                         <form action={retrocedirAction.bind(null, e.exercici)}>
                           <Button type="submit" variant="outline" size="sm">
                             Retrocedir

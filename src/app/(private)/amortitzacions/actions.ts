@@ -2,11 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireSession } from "@/lib/get-session";
+import { checkPermission } from "@/lib/get-session";
 import * as amortitzacionsService from "@/services/amortitzacions-service";
 
 export async function generarAmortitzacionsAction(formData: FormData) {
-  await requireSession();
+  const perm = await checkPermission("amortitzacio", "create");
+  if (!perm.ok) throw new Error(perm.message);
+
   const exercici = Number(formData.get("exercici"));
   if (!exercici || Number.isNaN(exercici)) {
     redirect("/amortitzacions?msg=error");
@@ -22,7 +24,8 @@ export async function generarAmortitzacionsAction(formData: FormData) {
 }
 
 export async function retrocedirAction(exercici: number) {
-  await requireSession();
+  const perm = await checkPermission("amortitzacio", "delete");
+  if (!perm.ok) throw new Error(perm.message);
 
   try {
     await amortitzacionsService.retrocedir(exercici);

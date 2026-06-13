@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import * as tipusDespesaService from "@/services/tipus-despesa-service";
+import { currentUserCan } from "@/lib/get-session";
 import { DeleteEntityButton } from "@/components/delete-entity-button";
 import {
   ResultToast,
@@ -35,6 +36,7 @@ export default async function TipusDespesaPage({
     search,
     includeInactius,
   });
+  const potGestionar = await currentUserCan("tipusDespesa", "create");
 
   return (
     <div className="space-y-6">
@@ -46,9 +48,11 @@ export default async function TipusDespesaPage({
           </h1>
           <p className="text-muted-foreground">Gestió dels tipus de despesa</p>
         </div>
-        <Button asChild>
-          <Link href="/tipus-despesa/nou">Nou tipus de despesa</Link>
-        </Button>
+        {potGestionar && (
+          <Button asChild>
+            <Link href="/tipus-despesa/nou">Nou tipus de despesa</Link>
+          </Button>
+        )}
       </div>
 
       <form method="GET" className="flex items-center gap-3">
@@ -122,25 +126,26 @@ export default async function TipusDespesaPage({
                   <TableCell>{p.deduible ? "Sí" : "No"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      {p.actiu ? (
-                        <>
-                          <Button asChild variant="outline" size="sm">
-                            <Link href={`/tipus-despesa/${p.id}`}>Editar</Link>
-                          </Button>
-                          <DeleteEntityButton
-                            id={p.id}
-                            nom={p.descripcio}
-                            entityLabel="tipus de despesa"
-                            onDelete={deleteTipusDespesa}
-                          />
-                        </>
-                      ) : (
-                        <form action={reactivateTipusDespesa.bind(null, p.id)}>
-                          <Button type="submit" variant="outline" size="sm">
-                            Reactivar
-                          </Button>
-                        </form>
-                      )}
+                      {potGestionar &&
+                        (p.actiu ? (
+                          <>
+                            <Button asChild variant="outline" size="sm">
+                              <Link href={`/tipus-despesa/${p.id}`}>Editar</Link>
+                            </Button>
+                            <DeleteEntityButton
+                              id={p.id}
+                              nom={p.descripcio}
+                              entityLabel="tipus de despesa"
+                              onDelete={deleteTipusDespesa}
+                            />
+                          </>
+                        ) : (
+                          <form action={reactivateTipusDespesa.bind(null, p.id)}>
+                            <Button type="submit" variant="outline" size="sm">
+                              Reactivar
+                            </Button>
+                          </form>
+                        ))}
                     </div>
                   </TableCell>
                 </TableRow>

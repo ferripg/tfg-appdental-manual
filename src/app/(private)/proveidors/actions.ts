@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSession, requireSession } from "@/lib/get-session";
+import { checkPermission } from "@/lib/get-session";
 import { proveidorSchema } from "@/schemas/proveidor-schema";
 import * as proveidorsService from "@/services/proveidors-service";
 import type { ProveidorFormData } from "@/schemas/proveidor-schema";
@@ -42,10 +42,8 @@ export async function createProveidor(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const session = await getSession();
-  if (!session) {
-    return { message: "Has d'estar autenticat" };
-  }
+  const perm = await checkPermission("proveidor", "create");
+  if (!perm.ok) return { message: perm.message };
 
   const raw = parseFormData(formData);
   const parsed = proveidorSchema.safeParse(raw);
@@ -75,10 +73,8 @@ export async function updateProveidor(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const session = await getSession();
-  if (!session) {
-    return { message: "Has d'estar autenticat" };
-  }
+  const perm = await checkPermission("proveidor", "update");
+  if (!perm.ok) return { message: perm.message };
 
   const raw = parseFormData(formData);
   const parsed = proveidorSchema.safeParse(raw);
@@ -105,13 +101,15 @@ export async function updateProveidor(
 }
 
 export async function deleteProveidor(id: string) {
-  await requireSession();
+  const perm = await checkPermission("proveidor", "delete");
+  if (!perm.ok) throw new Error(perm.message);
   await proveidorsService.eliminar(id);
   revalidatePath("/proveidors");
 }
 
 export async function reactivateProveidor(id: string) {
-  await requireSession();
+  const perm = await checkPermission("proveidor", "update");
+  if (!perm.ok) throw new Error(perm.message);
   await proveidorsService.reactivar(id);
   revalidatePath("/proveidors");
   redirect("/proveidors?msg=reactivat");

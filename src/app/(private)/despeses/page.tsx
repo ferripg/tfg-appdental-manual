@@ -12,6 +12,7 @@ import {
 import * as despesesService from "@/services/despeses-service";
 import * as proveidorsService from "@/services/proveidors-service";
 import * as tipusDespesaService from "@/services/tipus-despesa-service";
+import { currentUserCan } from "@/lib/get-session";
 import { DeleteEntityButton } from "@/components/delete-entity-button";
 import {
   ResultToast,
@@ -56,6 +57,9 @@ export default async function DespesesPage({
     tipusDespesaService.llistar(),
   ]);
 
+  const potCrear = await currentUserCan("despesa", "create");
+  const potGestionar = await currentUserCan("despesa", "update");
+
   const hasFilters = Boolean(
     search || desDe || finsA || proveidorId || tipusId,
   );
@@ -83,9 +87,11 @@ export default async function DespesesPage({
             Registre de despeses de la clínica
           </p>
         </div>
-        <Button asChild>
-          <Link href="/despeses/nou">Nova despesa</Link>
-        </Button>
+        {potCrear && (
+          <Button asChild>
+            <Link href="/despeses/nou">Nova despesa</Link>
+          </Button>
+        )}
       </div>
 
       <form
@@ -213,16 +219,20 @@ export default async function DespesesPage({
                           fitxerKey={d.fitxerKey}
                         ></DownloadFacturaButton>
                       )}
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/despeses/${d.id}`}>Editar</Link>
-                      </Button>
-                      <DeleteEntityButton
-                        id={d.id}
-                        nom={`${formatDate(d.dataFactura)} — ${formatImport(d.import.toString())}`}
-                        entityLabel="despesa"
-                        onDelete={deleteDespesa}
-                        mode="hard"
-                      />
+                      {potGestionar && (
+                        <>
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={`/despeses/${d.id}`}>Editar</Link>
+                          </Button>
+                          <DeleteEntityButton
+                            id={d.id}
+                            nom={`${formatDate(d.dataFactura)} — ${formatImport(d.import.toString())}`}
+                            entityLabel="despesa"
+                            onDelete={deleteDespesa}
+                            mode="hard"
+                          />
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

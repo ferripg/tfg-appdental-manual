@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSession, requireSession } from "@/lib/get-session";
+import { checkPermission } from "@/lib/get-session";
 import { despesaSchema } from "@/schemas/despesa-schema";
 import * as despesaService from "@/services/despeses-service";
 import { getPresignedUrl, uploadFactura } from "@/services/minio-service";
@@ -57,10 +57,8 @@ export async function createDespesa(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const session = await getSession();
-  if (!session) {
-    return { message: "Has d'estar autenticat" };
-  }
+  const perm = await checkPermission("despesa", "create");
+  if (!perm.ok) return { message: perm.message };
 
   const raw = parseFormData(formData);
   const parsed = despesaSchema.safeParse(raw);
@@ -79,7 +77,7 @@ export async function createDespesa(
     const cleaned = cleanOptionals(parsed.data);
     const dataAmbUserId = {
       ...cleaned,
-      userId: session.user.id,
+      userId: perm.session.user.id,
       fitxerKey,
     };
     await despesaService.crear(
@@ -98,10 +96,8 @@ export async function updateDespesa(
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const session = await getSession();
-  if (!session) {
-    return { message: "Has d'estar autenticat" };
-  }
+  const perm = await checkPermission("despesa", "update");
+  if (!perm.ok) return { message: perm.message };
 
   const raw = parseFormData(formData);
   const parsed = despesaSchema.safeParse(raw);
@@ -132,12 +128,14 @@ export async function updateDespesa(
 }
 
 export async function deleteDespesa(id: string) {
-  await requireSession();
+  const perm = await checkPermission("despesa", "delete");
+  if (!perm.ok) throw new Error(perm.message);
   await despesaService.eliminar(id);
   revalidatePath("/despeses");
 }
 
 export async function getFacturaUrl(fitxerKey: string): Promise<string> {
-  await requireSession();
+  const perm = await checkPermission("despesa", "read");
+  if (!perm.ok) throw new Error(perm.message);
   return getPresignedUrl(fitxerKey);
 }

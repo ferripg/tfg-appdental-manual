@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import * as inventariService from "@/services/inventari-service";
 import * as proveidorsService from "@/services/proveidors-service";
+import { currentUserCan } from "@/lib/get-session";
 import { ResultToast, type ResultToastMap } from "@/components/result-toast";
 import { DeleteEntityButton } from "@/components/delete-entity-button";
 import {
@@ -55,6 +56,8 @@ export default async function InventariPage({
     inventariService.llistar({ search, estat, proveidorId }),
     proveidorsService.llistar(),
   ]);
+
+  const potGestionar = await currentUserCan("inventari", "update");
 
   const hasFilters = Boolean(
     search || estatParam !== "ACTIU" || proveidorId,
@@ -185,37 +188,38 @@ export default async function InventariPage({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {b.estat === "ACTIU" ? (
-                          <>
-                            <Button asChild variant="outline" size="sm">
-                              <Link href={`/inventari/${b.id}`}>Editar</Link>
-                            </Button>
-                            <form action={baixaInventari.bind(null, b.id)}>
-                              <Button
-                                type="submit"
-                                variant="outline"
-                                size="sm"
-                              >
-                                Donar de baixa
+                        {potGestionar &&
+                          (b.estat === "ACTIU" ? (
+                            <>
+                              <Button asChild variant="outline" size="sm">
+                                <Link href={`/inventari/${b.id}`}>Editar</Link>
                               </Button>
-                            </form>
-                          </>
-                        ) : (
-                          <>
-                            <form action={reactivarInventari.bind(null, b.id)}>
-                              <Button type="submit" variant="outline" size="sm">
-                                Reactivar
-                              </Button>
-                            </form>
-                            <DeleteEntityButton
-                              id={b.id}
-                              nom={b.descripcio}
-                              entityLabel="bé"
-                              onDelete={eliminarInventari}
-                              mode="hard"
-                            />
-                          </>
-                        )}
+                              <form action={baixaInventari.bind(null, b.id)}>
+                                <Button
+                                  type="submit"
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  Donar de baixa
+                                </Button>
+                              </form>
+                            </>
+                          ) : (
+                            <>
+                              <form action={reactivarInventari.bind(null, b.id)}>
+                                <Button type="submit" variant="outline" size="sm">
+                                  Reactivar
+                                </Button>
+                              </form>
+                              <DeleteEntityButton
+                                id={b.id}
+                                nom={b.descripcio}
+                                entityLabel="bé"
+                                onDelete={eliminarInventari}
+                                mode="hard"
+                              />
+                            </>
+                          ))}
                       </div>
                     </TableCell>
                   </TableRow>

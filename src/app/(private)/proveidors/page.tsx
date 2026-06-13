@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import * as proveidorsService from "@/services/proveidors-service";
+import { currentUserCan } from "@/lib/get-session";
 import { DeleteEntityButton } from "@/components/delete-entity-button";
 import {
   ResultToast,
@@ -32,6 +33,7 @@ export default async function ProveidorsPage({
   const search = params.q?.trim() || undefined;
   const includeInactius = params.inactius === "1";
   const proveidors = await proveidorsService.llistar({ search, includeInactius });
+  const potGestionar = await currentUserCan("proveidor", "create");
 
   return (
     <div className="space-y-6">
@@ -43,9 +45,11 @@ export default async function ProveidorsPage({
             Gestió de proveïdors de la clínica
           </p>
         </div>
-        <Button asChild>
-          <Link href="/proveidors/nou">Nou proveïdor</Link>
-        </Button>
+        {potGestionar && (
+          <Button asChild>
+            <Link href="/proveidors/nou">Nou proveïdor</Link>
+          </Button>
+        )}
       </div>
 
       <form method="GET" className="flex items-center gap-3">
@@ -117,25 +121,26 @@ export default async function ProveidorsPage({
                   <TableCell>{p.telefon ?? "—"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      {p.actiu ? (
-                        <>
-                          <Button asChild variant="outline" size="sm">
-                            <Link href={`/proveidors/${p.id}`}>Editar</Link>
-                          </Button>
-                          <DeleteEntityButton
-                            id={p.id}
-                            nom={p.nom}
-                            entityLabel="proveïdor"
-                            onDelete={deleteProveidor}
-                          />
-                        </>
-                      ) : (
-                        <form action={reactivateProveidor.bind(null, p.id)}>
-                          <Button type="submit" variant="outline" size="sm">
-                            Reactivar
-                          </Button>
-                        </form>
-                      )}
+                      {potGestionar &&
+                        (p.actiu ? (
+                          <>
+                            <Button asChild variant="outline" size="sm">
+                              <Link href={`/proveidors/${p.id}`}>Editar</Link>
+                            </Button>
+                            <DeleteEntityButton
+                              id={p.id}
+                              nom={p.nom}
+                              entityLabel="proveïdor"
+                              onDelete={deleteProveidor}
+                            />
+                          </>
+                        ) : (
+                          <form action={reactivateProveidor.bind(null, p.id)}>
+                            <Button type="submit" variant="outline" size="sm">
+                              Reactivar
+                            </Button>
+                          </form>
+                        ))}
                     </div>
                   </TableCell>
                 </TableRow>
