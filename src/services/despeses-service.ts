@@ -10,8 +10,14 @@ export async function llistar(filters?: {
   finsA?: Date;
   proveidorId?: string;
   tipusId?: string;
+  importMin?: number;
+  importMax?: number;
 }) {
   return despesesRepository.findAll(filters);
+}
+
+export async function exercicisAmbDespeses() {
+  return despesesRepository.anysAmbDespeses();
 }
 
 export async function obtenir(id: string) {
@@ -52,6 +58,12 @@ export async function actualitzar(id: string, data: Prisma.DespesaUpdateInput) {
 
 export async function eliminar(id: string) {
   const despesa = await despesesRepository.findById(id);
+  const beAssociat = await inventariService.obtenirPerDespesa(id);
+  if (beAssociat) {
+    throw new Error(
+      "No es pot eliminar la despesa: té un bé d'inventari associat. Elimina primer el bé.",
+    );
+  }
   if (despesa?.fitxerKey) {
     try {
       await deleteFactura(despesa.fitxerKey);

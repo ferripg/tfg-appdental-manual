@@ -9,7 +9,7 @@ export const despesaSchema = z.object({
   dataPagament: z.coerce.date().optional().or(z.literal("")),
   import: z.coerce.number().positive("L'import ha de ser positiu"),
   numFactura: z.string().optional().or(z.literal("")),
-  descripcio: z.string().optional().or(z.literal("")),
+  descripcio: z.string().min(1, "El concepte és obligatori"),
   tipusDespesaId: z.string().min(1, "El tipus de despesa és obligatori"),
   proveidorId: z.string().min(1, "El proveïdor és obligatori"),
 });

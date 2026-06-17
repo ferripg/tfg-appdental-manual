@@ -177,15 +177,16 @@ export function DespesaForm({ mode, initialData, tipus, proveidors }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Descripció</CardTitle>
+          <CardTitle>Concepte</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Label htmlFor="descripcio">Descripció</Label>
+            <Label htmlFor="descripcio">Concepte *</Label>
             <Textarea
               id="descripcio"
               name="descripcio"
-              rows={3}
+              rows={2}
+              placeholder="Ex: Material dental (guants, fresas)"
               defaultValue={initialData?.descripcio ?? ""}
             />
             {state.errors?.descripcio && (

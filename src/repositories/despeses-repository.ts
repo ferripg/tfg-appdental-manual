@@ -7,8 +7,11 @@ export async function findAll(filters?: {
   finsA?: Date;
   proveidorId?: string;
   tipusId?: string;
+  importMin?: number;
+  importMax?: number;
 }) {
-  const { search, desDe, finsA, proveidorId, tipusId } = filters ?? {};
+  const { search, desDe, finsA, proveidorId, tipusId, importMin, importMax } =
+    filters ?? {};
   return prisma.despesa.findMany({
     where: {
       ...(search
@@ -29,6 +32,14 @@ export async function findAll(filters?: {
         : {}),
       ...(proveidorId ? { proveidorId } : {}),
       ...(tipusId ? { tipusDespesaId: tipusId } : {}),
+      ...(importMin !== undefined || importMax !== undefined
+        ? {
+            import: {
+              ...(importMin !== undefined ? { gte: importMin } : {}),
+              ...(importMax !== undefined ? { lte: importMax } : {}),
+            },
+          }
+        : {}),
     },
     include: { tipusDespesa: true, proveidor: true },
     orderBy: { dataFactura: "desc" },
@@ -57,6 +68,13 @@ export async function anyDespesaMesAntiga(): Promise<number | null> {
     select: { dataFactura: true },
   });
   return d ? d.dataFactura.getFullYear() : null;
+}
+
+// Anys distints que tenen alguna despesa (per al desplegable d'exercicis).
+export async function anysAmbDespeses(): Promise<number[]> {
+  const rows = await prisma.despesa.findMany({ select: { dataFactura: true } });
+  const anys = new Set(rows.map((d) => d.dataFactura.getFullYear()));
+  return [...anys].sort((a, b) => b - a);
 }
 
 export async function create(data: Prisma.DespesaCreateInput) {

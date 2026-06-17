@@ -30,7 +30,10 @@ export async function obtenir(id: string) {
   return inventariRepository.findById(id);
 }
 
-export async function actualitzar(id: string, data: Prisma.InventariUpdateInput) {
+export async function actualitzar(
+  id: string,
+  data: Prisma.InventariUpdateInput,
+) {
   return inventariRepository.update(id, data);
 }
 
@@ -45,6 +48,10 @@ export async function reactivar(id: string) {
 export async function eliminar(id: string) {
   // Hard delete: l'esborrem de debò. La "baixa" (reversible) cobreix el cas
   // d'errors o béns fora de circulació; eliminar és definitiu.
-  // PENDENT MAN-18: protegir béns amb amortitzacions (no s'han de poder esborrar).
+  // PENDENT MAN-24: protegir béns amb amortitzacions (no s'han de poder esborrar).
   return inventariRepository.remove(id);
+}
+
+export async function obtenirPerDespesa(despesaId: string) {
+  return inventariRepository.findByDespesaId(despesaId);
 }

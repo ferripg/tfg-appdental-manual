@@ -42,7 +42,7 @@ export default function LoginPage() {
             <CardContent className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-base">
-                  Email
+                  Usuari
                 </Label>
                 <Input
                   id="email"

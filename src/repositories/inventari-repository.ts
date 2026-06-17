@@ -84,3 +84,7 @@ export async function updateAmortitzacio(
     data: { importAmortitzat, importUltimaAmort },
   });
 }
+
+export async function findByDespesaId(despesaId: string) {
+  return prisma.inventari.findUnique({ where: { despesaId } });
+}

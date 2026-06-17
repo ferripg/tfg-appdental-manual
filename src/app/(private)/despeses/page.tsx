@@ -32,6 +32,12 @@ function parseDateParam(value: string | undefined): Date | undefined {
   return Number.isNaN(d.getTime()) ? undefined : d;
 }
 
+function parseNumParam(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const n = Number(value);
+  return Number.isNaN(n) ? undefined : n;
+}
+
 export default async function DespesesPage({
   searchParams,
 }: {
@@ -41,27 +47,60 @@ export default async function DespesesPage({
     finsA?: string;
     proveidorId?: string;
     tipusId?: string;
+    exercici?: string;
+    importMin?: string;
+    importMax?: string;
     msg?: string;
   }>;
 }) {
   const params = await searchParams;
   const search = params.q?.trim() || undefined;
-  const desDe = parseDateParam(params.desDe);
-  const finsA = parseDateParam(params.finsA);
+  let desDe = parseDateParam(params.desDe);
+  let finsA = parseDateParam(params.finsA);
   const proveidorId = params.proveidorId || undefined;
   const tipusId = params.tipusId || undefined;
+  const importMin = parseNumParam(params.importMin);
+  const importMax = parseNumParam(params.importMax);
 
-  const [despeses, proveidors, tipus] = await Promise.all([
-    despesesService.llistar({ search, desDe, finsA, proveidorId, tipusId }),
+  // Exercici: si se'n tria un, filtra tot l'any (sobreescriu el rang de dates).
+  const exercici = parseNumParam(params.exercici);
+  if (exercici !== undefined) {
+    desDe = new Date(exercici, 0, 1);
+    finsA = new Date(exercici, 11, 31);
+  }
+
+  const [despeses, proveidors, tipus, anysDespeses] = await Promise.all([
+    despesesService.llistar({
+      search,
+      desDe,
+      finsA,
+      proveidorId,
+      tipusId,
+      importMin,
+      importMax,
+    }),
     proveidorsService.llistar(),
     tipusDespesaService.llistar(),
+    despesesService.exercicisAmbDespeses(),
   ]);
+
+  // Anys del desplegable: els que realment tenen despeses + sempre l'actual.
+  const anyActual = new Date().getFullYear();
+  const exercicis = [...new Set([anyActual, ...anysDespeses])].sort(
+    (a, b) => b - a,
+  );
 
   const potCrear = await currentUserCan("despesa", "create");
   const potGestionar = await currentUserCan("despesa", "update");
 
   const hasFilters = Boolean(
-    search || desDe || finsA || proveidorId || tipusId,
+    search ||
+      desDe ||
+      finsA ||
+      proveidorId ||
+      tipusId ||
+      importMin !== undefined ||
+      importMax !== undefined,
   );
 
   const formatDate = (d: Date) =>
@@ -94,64 +133,109 @@ export default async function DespesesPage({
         )}
       </div>
 
-      <form
-        method="GET"
-        className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end rounded-lg border bg-card p-4"
-      >
-        <div className="md:col-span-2">
-          <label className="text-xs text-muted-foreground">Cerca</label>
-          <Input
-            name="q"
-            placeholder="Núm. factura o descripció…"
-            defaultValue={search ?? ""}
-          />
+      <form method="GET" className="space-y-3 rounded-lg border bg-card p-4">
+        {/* Filtres principals */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+          <div>
+            <label className="text-xs text-muted-foreground">Cerca</label>
+            <Input
+              name="q"
+              placeholder="Núm. factura o descripció…"
+              defaultValue={search ?? ""}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Exercici</label>
+            <select
+              name="exercici"
+              defaultValue={params.exercici ?? ""}
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
+            >
+              <option value="">Tots</option>
+              {exercicis.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Proveïdor</label>
+            <select
+              name="proveidorId"
+              defaultValue={proveidorId ?? ""}
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
+            >
+              <option value="">Tots</option>
+              {proveidors.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.nom}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Tipus</label>
+            <select
+              name="tipusId"
+              defaultValue={tipusId ?? ""}
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
+            >
+              <option value="">Tots</option>
+              {tipus.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.codi} — {t.descripcio}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div>
-          <label className="text-xs text-muted-foreground">Des de</label>
-          <Input
-            name="desDe"
-            type="date"
-            defaultValue={params.desDe ?? ""}
-          />
-        </div>
-        <div>
-          <label className="text-xs text-muted-foreground">Fins a</label>
-          <Input
-            name="finsA"
-            type="date"
-            defaultValue={params.finsA ?? ""}
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label className="text-xs text-muted-foreground">Proveïdor</label>
-          <select
-            name="proveidorId"
-            defaultValue={proveidorId ?? ""}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
-          >
-            <option value="">Tots</option>
-            {proveidors.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nom}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="md:col-span-2">
-          <label className="text-xs text-muted-foreground">Tipus</label>
-          <select
-            name="tipusId"
-            defaultValue={tipusId ?? ""}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
-          >
-            <option value="">Tots</option>
-            {tipus.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.codi} — {t.descripcio}
-              </option>
-            ))}
-          </select>
-        </div>
+
+        {/* Més filtres: col·lapsable; s'obre sol si n'hi ha algun d'actiu */}
+        <details
+          open={Boolean(
+            params.desDe ||
+              params.finsA ||
+              importMin !== undefined ||
+              importMax !== undefined,
+          )}
+        >
+          <summary className="cursor-pointer select-none text-sm text-muted-foreground">
+            Més filtres
+          </summary>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end mt-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Des de</label>
+              <Input name="desDe" type="date" defaultValue={params.desDe ?? ""} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Fins a</label>
+              <Input name="finsA" type="date" defaultValue={params.finsA ?? ""} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Import mín</label>
+              <Input
+                name="importMin"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={params.importMin ?? ""}
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Import màx</label>
+              <Input
+                name="importMax"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={params.importMax ?? ""}
+              />
+            </div>
+          </div>
+        </details>
+
+        {/* Accions */}
         <div className="flex items-center gap-2">
           <Button type="submit" variant="outline" size="sm">
             Aplicar
@@ -169,6 +253,7 @@ export default async function DespesesPage({
           <TableHeader>
             <TableRow>
               <TableHead>Data factura</TableHead>
+              <TableHead>Concepte</TableHead>
               <TableHead>Import</TableHead>
               <TableHead>Tipus</TableHead>
               <TableHead>Proveïdor</TableHead>
@@ -181,7 +266,7 @@ export default async function DespesesPage({
             {despeses.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="text-center text-muted-foreground py-8"
                 >
                   No hi ha despeses. {hasFilters ? "Prova a netejar els filtres." : "Comença creant-ne una."}
@@ -190,8 +275,9 @@ export default async function DespesesPage({
             ) : (
               despeses.map((d) => (
                 <TableRow key={d.id}>
+                  <TableCell>{formatDate(d.dataFactura)}</TableCell>
                   <TableCell className="font-medium">
-                    {formatDate(d.dataFactura)}
+                    {d.descripcio ?? "—"}
                   </TableCell>
                   <TableCell className="font-mono">
                     {formatImport(d.import.toString())}
