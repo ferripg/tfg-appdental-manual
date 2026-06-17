@@ -15,7 +15,10 @@ export async function findAll(filters?: {
       ...(estat ? { estat } : {}),
       ...(proveidorId ? { proveidorId } : {}),
     },
-    include: { proveidor: true },
+    include: {
+      proveidor: true,
+      _count: { select: { amortitzacions: true } },
+    },
     orderBy: { dataAdquisicio: "desc" },
   });
 }

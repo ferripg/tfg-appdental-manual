@@ -46,3 +46,7 @@ export async function ultimExercici(): Promise<number | null> {
   });
   return r ? r.exercici : null;
 }
+
+export async function countByInventari(inventariId: string): Promise<number> {
+  return prisma.amortitzacio.count({ where: { inventariId } });
+}

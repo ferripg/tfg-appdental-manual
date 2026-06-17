@@ -51,6 +51,19 @@ export async function generarAmortitzacions(exercici: number) {
 
     // Amortització lineal de l'any: import × % / 100
     let amort = importAdq.mul(perc).div(100);
+    // El primer any es prorrateja pels dies des de l'adquisició fins a final d'any
+    if (be.dataAdquisicio.getUTCFullYear() === exercici) {
+      const MS_DIA = 1000 * 60 * 60 * 24;
+      const adq = Date.UTC(
+        exercici,
+        be.dataAdquisicio.getUTCMonth(),
+        be.dataAdquisicio.getUTCDate(),
+      );
+      const diesRestants = (Date.UTC(exercici, 11, 31) - adq) / MS_DIA + 1;
+      const diesAny =
+        (Date.UTC(exercici + 1, 0, 1) - Date.UTC(exercici, 0, 1)) / MS_DIA;
+      amort = amort.mul(diesRestants).div(diesAny);
+    }
     // No passar-se del que queda (l'últim any amortitza menys)
     if (amort.greaterThan(pendent)) amort = pendent;
 

@@ -1,4 +1,5 @@
 import * as inventariRepository from "@/repositories/inventari-repository";
+import * as amortitzacioRepository from "@/repositories/amortitzacio-repository";
 import type { Despesa, Prisma, EstatInventari } from "@prisma/client";
 
 // Genera un bé d'inventari a partir d'una despesa amortitzable. El % es crea
@@ -34,6 +35,12 @@ export async function actualitzar(
   id: string,
   data: Prisma.InventariUpdateInput,
 ) {
+  const numAmort = await amortitzacioRepository.countByInventari(id);
+  if (numAmort > 0) {
+    throw new Error(
+      "No es pot modificar un bé amb amortitzacions generades. Retrocedeix-les abans de modificar-lo.",
+    );
+  }
   return inventariRepository.update(id, data);
 }
 
@@ -48,7 +55,12 @@ export async function reactivar(id: string) {
 export async function eliminar(id: string) {
   // Hard delete: l'esborrem de debò. La "baixa" (reversible) cobreix el cas
   // d'errors o béns fora de circulació; eliminar és definitiu.
-  // PENDENT MAN-24: protegir béns amb amortitzacions (no s'han de poder esborrar).
+  const numAmort = await amortitzacioRepository.countByInventari(id);
+  if (numAmort > 0) {
+    throw new Error(
+      "No es pot eliminar un bé amb amortitzacions generades. Retrocedeix-les primer.",
+    );
+  }
   return inventariRepository.remove(id);
 }
 

@@ -167,6 +167,7 @@ export default async function InventariPage({
             ) : (
               items.map((b) => {
                 const badge = ESTAT_BADGE[b.estat];
+                const teAmort = b._count.amortitzacions > 0;
                 return (
                   <TableRow key={b.id}>
                     <TableCell className="font-mono text-sm">
@@ -191,9 +192,18 @@ export default async function InventariPage({
                         {potGestionar &&
                           (b.estat === "ACTIU" ? (
                             <>
-                              <Button asChild variant="outline" size="sm">
-                                <Link href={`/inventari/${b.id}`}>Editar</Link>
-                              </Button>
+                              {teAmort ? (
+                                <span
+                                  className="text-xs text-muted-foreground"
+                                  title="Bé amb amortitzacions generades: retrocedeix-les per poder editar-lo."
+                                >
+                                  Bloquejat
+                                </span>
+                              ) : (
+                                <Button asChild variant="outline" size="sm">
+                                  <Link href={`/inventari/${b.id}`}>Editar</Link>
+                                </Button>
+                              )}
                               <form action={baixaInventari.bind(null, b.id)}>
                                 <Button
                                   type="submit"
@@ -211,13 +221,22 @@ export default async function InventariPage({
                                   Reactivar
                                 </Button>
                               </form>
-                              <DeleteEntityButton
-                                id={b.id}
-                                nom={b.descripcio}
-                                entityLabel="bé"
-                                onDelete={eliminarInventari}
-                                mode="hard"
-                              />
+                              {teAmort ? (
+                                <span
+                                  className="text-xs text-muted-foreground"
+                                  title="Bé amb amortitzacions generades: retrocedeix-les per poder eliminar-lo."
+                                >
+                                  Bloquejat
+                                </span>
+                              ) : (
+                                <DeleteEntityButton
+                                  id={b.id}
+                                  nom={b.descripcio}
+                                  entityLabel="bé"
+                                  onDelete={eliminarInventari}
+                                  mode="hard"
+                                />
+                              )}
                             </>
                           ))}
                       </div>
