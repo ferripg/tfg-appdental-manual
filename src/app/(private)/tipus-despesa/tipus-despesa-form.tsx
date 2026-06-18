@@ -19,7 +19,7 @@ import {
 } from "./actions";
 
 type Props = {
-  mode: "create" | "edit";
+  mode: "create" | "edit" | "view";
   initialData?: TipusDespesa;
 };
 
@@ -44,6 +44,7 @@ export function TipusDespesaForm({ mode, initialData }: Props) {
         </div>
       )}
 
+      <fieldset disabled={mode === "view"} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Dades bàsiques</CardTitle>
@@ -107,17 +108,21 @@ export function TipusDespesaForm({ mode, initialData }: Props) {
         </CardContent>
       </Card>
 
+      </fieldset>
+
       <div className="flex items-center justify-end gap-3">
         <Button asChild variant="outline">
-          <Link href="/tipus-despesa">Cancel·lar</Link>
+          <Link href="/tipus-despesa">{mode === "view" ? "Tornar" : "Cancel·lar"}</Link>
         </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending
-            ? "Guardant..."
-            : mode === "create"
-              ? "Crear tipus de despesa"
-              : "Guardar canvis"}
-        </Button>
+        {mode !== "view" && (
+          <Button type="submit" disabled={isPending}>
+            {isPending
+              ? "Guardant..."
+              : mode === "create"
+                ? "Crear tipus de despesa"
+                : "Guardar canvis"}
+          </Button>
+        )}
       </div>
     </form>
   );

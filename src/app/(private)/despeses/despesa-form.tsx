@@ -20,7 +20,7 @@ import { createDespesa, updateDespesa, type FormState } from "./actions";
 // `import` com a string: el Decimal de Prisma no es pot passar d'un Server
 // Component a un Client Component (cal serialitzar-lo al servidor abans).
 type Props = {
-  mode: "create" | "edit";
+  mode: "create" | "edit" | "view";
   initialData?: Omit<Despesa, "import"> & { import: string };
   tipus: TipusDespesa[];
   proveidors: Proveidor[];
@@ -52,6 +52,7 @@ export function DespesaForm({ mode, initialData, tipus, proveidors }: Props) {
         </div>
       )}
 
+      <fieldset disabled={mode === "view"} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Dades de la factura</CardTitle>
@@ -226,17 +227,21 @@ export function DespesaForm({ mode, initialData, tipus, proveidors }: Props) {
         </CardContent>
       </Card>
 
+      </fieldset>
+
       <div className="flex items-center justify-end gap-3">
         <Button asChild variant="outline">
-          <Link href="/despeses">Cancel·lar</Link>
+          <Link href="/despeses">{mode === "view" ? "Tornar" : "Cancel·lar"}</Link>
         </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending
-            ? "Guardant..."
-            : mode === "create"
-              ? "Crear despesa"
-              : "Guardar canvis"}
-        </Button>
+        {mode !== "view" && (
+          <Button type="submit" disabled={isPending}>
+            {isPending
+              ? "Guardant..."
+              : mode === "create"
+                ? "Crear despesa"
+                : "Guardar canvis"}
+          </Button>
+        )}
       </div>
     </form>
   );

@@ -8,10 +8,13 @@ import * as proveidorsService from "@/services/proveidors-service";
 
 type Props = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ mode?: string }>;
 };
 
-export default async function EditarDespesaPage({ params }: Props) {
+export default async function EditarDespesaPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { mode: modeParam } = await searchParams;
+  const mode = modeParam === "view" ? "view" : "edit";
   const [despesa, tipus, proveidors] = await Promise.all([
     despesesService.obtenir(id),
     tipusDespesaService.llistar(),
@@ -35,7 +38,7 @@ export default async function EditarDespesaPage({ params }: Props) {
         </Button>
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
-            Editar despesa
+            {mode === "view" ? "Detall de la despesa" : "Editar despesa"}
           </h1>
           <p className="text-muted-foreground">
             {new Date(despesa.dataFactura).toLocaleDateString("ca-ES")} —{" "}
@@ -48,7 +51,7 @@ export default async function EditarDespesaPage({ params }: Props) {
       </div>
 
       <DespesaForm
-        mode="edit"
+        mode={mode}
         initialData={initialData}
         tipus={tipus}
         proveidors={proveidors}

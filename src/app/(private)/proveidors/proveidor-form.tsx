@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createProveidor, updateProveidor, type FormState } from "./actions";
 
 type Props = {
-  mode: "create" | "edit";
+  mode: "create" | "edit" | "view";
   initialData?: Proveidor;
 };
 
@@ -36,6 +36,7 @@ export function ProveidorForm({ mode, initialData }: Props) {
         </div>
       )}
 
+      <fieldset disabled={mode === "view"} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Dades fiscals</CardTitle>
@@ -146,17 +147,21 @@ export function ProveidorForm({ mode, initialData }: Props) {
         </CardContent>
       </Card>
 
+      </fieldset>
+
       <div className="flex items-center justify-end gap-3">
         <Button asChild variant="outline">
-          <Link href="/proveidors">Cancel·lar</Link>
+          <Link href="/proveidors">{mode === "view" ? "Tornar" : "Cancel·lar"}</Link>
         </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending
-            ? "Guardant..."
-            : mode === "create"
-              ? "Crear proveïdor"
-              : "Guardar canvis"}
-        </Button>
+        {mode !== "view" && (
+          <Button type="submit" disabled={isPending}>
+            {isPending
+              ? "Guardant..."
+              : mode === "create"
+                ? "Crear proveïdor"
+                : "Guardar canvis"}
+          </Button>
+        )}
       </div>
     </form>
   );

@@ -7,10 +7,14 @@ import * as proveidorsService from "@/services/proveidors-service";
 
 export default async function EditarInventariPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ mode?: string }>;
 }) {
   const { id } = await params;
+  const { mode: modeParam } = await searchParams;
+  const mode = modeParam === "view" ? "view" : "edit";
 
   const [item, proveidors] = await Promise.all([
     inventariService.obtenir(id),
@@ -39,12 +43,14 @@ export default async function EditarInventariPage({
           <Link href="/inventari">← Tornar</Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Editar bé</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            {mode === "view" ? "Detall del bé" : "Editar bé"}
+          </h1>
           <p className="text-muted-foreground">{item.descripcio}</p>
         </div>
       </div>
 
-      <InventariForm initialData={initialData} proveidors={proveidors} />
+      <InventariForm mode={mode} initialData={initialData} proveidors={proveidors} />
     </div>
   );
 }

@@ -121,6 +121,9 @@ export default async function ProveidorsPage({
                   <TableCell>{p.telefon ?? "—"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/proveidors/${p.id}?mode=view`}>Veure</Link>
+                      </Button>
                       {potGestionar &&
                         (p.actiu ? (
                           <>

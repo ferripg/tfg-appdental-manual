@@ -305,6 +305,9 @@ export default async function DespesesPage({
                           fitxerKey={d.fitxerKey}
                         ></DownloadFacturaButton>
                       )}
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/despeses/${d.id}?mode=view`}>Veure</Link>
+                      </Button>
                       {potGestionar && (
                         <>
                           <Button asChild variant="outline" size="sm">

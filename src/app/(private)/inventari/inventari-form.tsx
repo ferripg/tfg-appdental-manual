@@ -19,6 +19,7 @@ import { updateInventari, type FormState } from "./actions";
 // Imports com a string perquè els Decimal de Prisma no es poden passar
 // d'un Server Component a un Client Component (cal serialitzar-los abans).
 type Props = {
+  mode?: "edit" | "view";
   initialData: {
     id: string;
     numInventari: string | null;
@@ -37,7 +38,7 @@ function toInputDate(d?: Date | null) {
   return new Date(d).toISOString().slice(0, 10);
 }
 
-export function InventariForm({ initialData, proveidors }: Props) {
+export function InventariForm({ mode = "edit", initialData, proveidors }: Props) {
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     updateInventari.bind(null, initialData.id),
     {},
@@ -53,6 +54,7 @@ export function InventariForm({ initialData, proveidors }: Props) {
         </div>
       )}
 
+      <fieldset disabled={mode === "view"} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Dades del bé</CardTitle>
@@ -171,13 +173,17 @@ export function InventariForm({ initialData, proveidors }: Props) {
         </CardContent>
       </Card>
 
+      </fieldset>
+
       <div className="flex items-center justify-end gap-3">
         <Button asChild variant="outline">
-          <Link href="/inventari">Cancel·lar</Link>
+          <Link href="/inventari">{mode === "view" ? "Tornar" : "Cancel·lar"}</Link>
         </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Guardant..." : "Guardar canvis"}
-        </Button>
+        {mode !== "view" && (
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Guardant..." : "Guardar canvis"}
+          </Button>
+        )}
       </div>
     </form>
   );

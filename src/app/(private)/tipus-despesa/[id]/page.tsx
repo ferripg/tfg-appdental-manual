@@ -6,10 +6,13 @@ import * as tipusDespesaService from "@/services/tipus-despesa-service";
 
 type Props = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ mode?: string }>;
 };
 
-export default async function EditarTipusDespesaPage({ params }: Props) {
+export default async function EditarTipusDespesaPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { mode: modeParam } = await searchParams;
+  const mode = modeParam === "view" ? "view" : "edit";
   const tipusDespesa = await tipusDespesaService.obtenir(id);
 
   if (!tipusDespesa) {
@@ -24,7 +27,9 @@ export default async function EditarTipusDespesaPage({ params }: Props) {
         </Button>
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
-            Editar tipus de despesa
+            {mode === "view"
+              ? "Detall del tipus de despesa"
+              : "Editar tipus de despesa"}
           </h1>
           <p className="text-muted-foreground">
             {tipusDespesa.descripcio} — Codi {tipusDespesa.codi}
@@ -32,7 +37,7 @@ export default async function EditarTipusDespesaPage({ params }: Props) {
         </div>
       </div>
 
-      <TipusDespesaForm mode="edit" initialData={tipusDespesa} />
+      <TipusDespesaForm mode={mode} initialData={tipusDespesa} />
     </div>
   );
 }

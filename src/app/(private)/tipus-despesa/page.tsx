@@ -126,6 +126,9 @@ export default async function TipusDespesaPage({
                   <TableCell>{p.deduible ? "Sí" : "No"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/tipus-despesa/${p.id}?mode=view`}>Veure</Link>
+                      </Button>
                       {potGestionar &&
                         (p.actiu ? (
                           <>

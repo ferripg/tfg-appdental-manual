@@ -6,10 +6,13 @@ import * as proveidorsService from "@/services/proveidors-service";
 
 type Props = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ mode?: string }>;
 };
 
-export default async function EditarProveidorPage({ params }: Props) {
+export default async function EditarProveidorPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { mode: modeParam } = await searchParams;
+  const mode = modeParam === "view" ? "view" : "edit";
   const proveidor = await proveidorsService.obtenir(id);
 
   if (!proveidor) {
@@ -24,7 +27,7 @@ export default async function EditarProveidorPage({ params }: Props) {
         </Button>
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
-            Editar proveïdor
+            {mode === "view" ? "Detall del proveïdor" : "Editar proveïdor"}
           </h1>
           <p className="text-muted-foreground">
             {proveidor.nom} — NIF {proveidor.nif}
@@ -32,7 +35,7 @@ export default async function EditarProveidorPage({ params }: Props) {
         </div>
       </div>
 
-      <ProveidorForm mode="edit" initialData={proveidor} />
+      <ProveidorForm mode={mode} initialData={proveidor} />
     </div>
   );
 }

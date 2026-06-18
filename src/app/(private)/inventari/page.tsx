@@ -189,6 +189,9 @@ export default async function InventariPage({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Button asChild variant="ghost" size="sm">
+                          <Link href={`/inventari/${b.id}?mode=view`}>Veure</Link>
+                        </Button>
                         {potGestionar &&
                           (b.estat === "ACTIU" ? (
                             <>
