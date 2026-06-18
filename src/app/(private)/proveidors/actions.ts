@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { checkPermission } from "@/lib/get-session";
 import { proveidorSchema } from "@/schemas/proveidor-schema";
 import * as proveidorsService from "@/services/proveidors-service";
+import * as auditService from "@/services/audit-service";
 import type { ProveidorFormData } from "@/schemas/proveidor-schema";
 import type { Prisma } from "@prisma/client";
 
@@ -104,6 +105,12 @@ export async function deleteProveidor(id: string) {
   const perm = await checkPermission("proveidor", "delete");
   if (!perm.ok) throw new Error(perm.message);
   await proveidorsService.eliminar(id);
+  await auditService.log({
+    accio: "DELETE",
+    userId: perm.session.user.id,
+    entitat: "Proveidor",
+    entitatId: id,
+  });
   revalidatePath("/proveidors");
 }
 
@@ -111,6 +118,13 @@ export async function reactivateProveidor(id: string) {
   const perm = await checkPermission("proveidor", "update");
   if (!perm.ok) throw new Error(perm.message);
   await proveidorsService.reactivar(id);
+  await auditService.log({
+    accio: "UPDATE",
+    userId: perm.session.user.id,
+    entitat: "Proveidor",
+    entitatId: id,
+    metadata: { reactivat: true },
+  });
   revalidatePath("/proveidors");
   redirect("/proveidors?msg=reactivat");
 }

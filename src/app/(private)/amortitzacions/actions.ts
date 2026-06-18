@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { checkPermission } from "@/lib/get-session";
 import * as amortitzacionsService from "@/services/amortitzacions-service";
+import * as auditService from "@/services/audit-service";
 
 export async function generarAmortitzacionsAction(formData: FormData) {
   const perm = await checkPermission("amortitzacio", "create");
@@ -19,6 +20,11 @@ export async function generarAmortitzacionsAction(formData: FormData) {
   } catch {
     redirect("/amortitzacions?msg=error");
   }
+  await auditService.log({
+    accio: "AMORTITZACIONS_GENERATED",
+    userId: perm.session.user.id,
+    metadata: { exercici },
+  });
   revalidatePath("/amortitzacions");
   redirect("/amortitzacions?msg=generat");
 }
@@ -32,6 +38,11 @@ export async function retrocedirAction(exercici: number) {
   } catch {
     redirect("/amortitzacions?msg=error");
   }
+  await auditService.log({
+    accio: "AMORTITZACIONS_RETROCEDIDES",
+    userId: perm.session.user.id,
+    metadata: { exercici },
+  });
   revalidatePath("/amortitzacions");
   redirect("/amortitzacions?msg=retrocedit");
 }

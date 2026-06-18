@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { checkPermission } from "@/lib/get-session";
 import { despesaSchema } from "@/schemas/despesa-schema";
 import * as despesaService from "@/services/despeses-service";
+import * as auditService from "@/services/audit-service";
 import { getPresignedUrl, uploadFactura } from "@/services/minio-service";
 import type { DespesaFormData } from "@/schemas/despesa-schema";
 import type { Prisma } from "@prisma/client";
@@ -131,6 +132,12 @@ export async function deleteDespesa(id: string) {
   const perm = await checkPermission("despesa", "delete");
   if (!perm.ok) throw new Error(perm.message);
   await despesaService.eliminar(id);
+  await auditService.log({
+    accio: "DELETE",
+    userId: perm.session.user.id,
+    entitat: "Despesa",
+    entitatId: id,
+  });
   revalidatePath("/despeses");
 }
 

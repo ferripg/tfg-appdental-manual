@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { checkPermission } from "@/lib/get-session";
 import { tipusDespesaSchema } from "@/schemas/tipus-despesa-schema";
 import * as tipusDespesaService from "@/services/tipus-despesa-service";
+import * as auditService from "@/services/audit-service";
 import type { TipusDespesaFormData } from "@/schemas/tipus-despesa-schema";
 import type { Prisma } from "@prisma/client";
 
@@ -99,6 +100,12 @@ export async function deleteTipusDespesa(id: string) {
   const perm = await checkPermission("tipusDespesa", "delete");
   if (!perm.ok) throw new Error(perm.message);
   await tipusDespesaService.eliminar(id);
+  await auditService.log({
+    accio: "DELETE",
+    userId: perm.session.user.id,
+    entitat: "TipusDespesa",
+    entitatId: id,
+  });
   revalidatePath("/tipus-despesa");
 }
 
@@ -106,6 +113,13 @@ export async function reactivateTipusDespesa(id: string) {
   const perm = await checkPermission("tipusDespesa", "update");
   if (!perm.ok) throw new Error(perm.message);
   await tipusDespesaService.reactivar(id);
+  await auditService.log({
+    accio: "UPDATE",
+    userId: perm.session.user.id,
+    entitat: "TipusDespesa",
+    entitatId: id,
+    metadata: { reactivat: true },
+  });
   revalidatePath("/tipus-despesa");
   redirect("/tipus-despesa?msg=reactivat");
 }

@@ -4,6 +4,7 @@ import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
 import { prisma } from "@/repositories/prisma-client";
 import { createAuthMiddleware, APIError } from "better-auth/api";
+import * as auditService from "@/services/audit-service";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -62,6 +63,8 @@ export const auth = betterAuth({
       const email = ctx.body?.email;
       if (!email) return;
 
+      const ip = ctx.headers?.get("x-forwarded-for")?.split(",")[0]?.trim();
+
       if (ctx.context.newSession) {
         await prisma.user.update({
           where: { email },
@@ -70,6 +73,11 @@ export const auth = betterAuth({
             lockedUntil: null,
             lastLoginAt: new Date(),
           },
+        });
+        await auditService.log({
+          accio: "LOGIN_OK",
+          userId: ctx.context.newSession.user.id,
+          ip,
         });
       } else {
         const user = await prisma.user.findUnique({ where: { email } });
@@ -84,6 +92,12 @@ export const auth = betterAuth({
                 ? new Date(Date.now() + 15 * 60 * 1000)
                 : user.lockedUntil,
           },
+        });
+        await auditService.log({
+          accio: "LOGIN_FAIL",
+          userId: user.id,
+          ip,
+          metadata: { email },
         });
       }
     }),

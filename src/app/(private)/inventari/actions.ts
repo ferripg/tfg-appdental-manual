@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { checkPermission } from "@/lib/get-session";
 import { inventariSchema } from "@/schemas/inventari-schema";
 import * as inventariService from "@/services/inventari-service";
+import * as auditService from "@/services/audit-service";
 import type { InventariFormData } from "@/schemas/inventari-schema";
 import type { Prisma } from "@prisma/client";
 
@@ -69,6 +70,13 @@ export async function baixaInventari(id: string) {
   const perm = await checkPermission("inventari", "update");
   if (!perm.ok) throw new Error(perm.message);
   await inventariService.donarDeBaixa(id);
+  await auditService.log({
+    accio: "UPDATE",
+    userId: perm.session.user.id,
+    entitat: "Inventari",
+    entitatId: id,
+    metadata: { estat: "BAIXA" },
+  });
   revalidatePath("/inventari");
   redirect("/inventari?msg=baixa");
 }
@@ -77,6 +85,13 @@ export async function reactivarInventari(id: string) {
   const perm = await checkPermission("inventari", "update");
   if (!perm.ok) throw new Error(perm.message);
   await inventariService.reactivar(id);
+  await auditService.log({
+    accio: "UPDATE",
+    userId: perm.session.user.id,
+    entitat: "Inventari",
+    entitatId: id,
+    metadata: { estat: "ACTIU" },
+  });
   revalidatePath("/inventari");
   redirect("/inventari?msg=reactivat");
 }
@@ -86,5 +101,11 @@ export async function eliminarInventari(id: string) {
   const perm = await checkPermission("inventari", "delete");
   if (!perm.ok) throw new Error(perm.message);
   await inventariService.eliminar(id);
+  await auditService.log({
+    accio: "DELETE",
+    userId: perm.session.user.id,
+    entitat: "Inventari",
+    entitatId: id,
+  });
   revalidatePath("/inventari");
 }

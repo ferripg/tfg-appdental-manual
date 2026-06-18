@@ -72,6 +72,14 @@ export default async function PrivateLayout({
                 Usuaris
               </Link>
             )}
+            {session.user.role === "ADMIN" && (
+              <Link
+                href="/admin/audit-log"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Auditoria
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-4">
