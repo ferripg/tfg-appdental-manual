@@ -2,10 +2,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
-import { logoutAction } from "./actions";
 import { MobileNav } from "./mobile-nav";
 import { NavLink } from "./nav-link";
+import { UserMenu } from "./user-menu";
 import pkg from "../../../package.json";
 
 export default async function PrivateLayout({
@@ -18,6 +17,7 @@ export default async function PrivateLayout({
   });
 
   if (!session) redirect("/login");
+  if (session.user.mustChangePassword) redirect("/canviar-contrasenya");
 
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
@@ -59,14 +59,7 @@ export default async function PrivateLayout({
 
           <div className="flex items-center gap-4">
             <MobileNav links={navLinks} />
-            <span className="text-sm text-muted-foreground hidden sm:inline">
-              {session.user.email}
-            </span>
-            <form action={logoutAction}>
-              <Button type="submit" variant="outline" size="sm">
-                Tancar sessió
-              </Button>
-            </form>
+            <UserMenu email={session.user.email} />
           </div>
         </div>
       </header>
