@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { MobileNav } from "./mobile-nav";
 import { NavLink } from "./nav-link";
 import { UserMenu } from "./user-menu";
+import { NavDropdown } from "./nav-dropdown";
 import pkg from "../../../package.json";
 
 export default async function PrivateLayout({
@@ -19,20 +20,20 @@ export default async function PrivateLayout({
   if (!session) redirect("/login");
   if (session.user.mustChangePassword) redirect("/canviar-contrasenya");
 
-  const navLinks = [
+  const links = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/despeses", label: "Despeses" },
     { href: "/proveidors", label: "Proveïdors" },
     { href: "/tipus-despesa", label: "Tipus de despesa" },
     { href: "/inventari", label: "Inventari" },
     { href: "/amortitzacions", label: "Amortitzacions" },
-    ...(session.user.role === "ADMIN"
-      ? [
-          { href: "/admin/users", label: "Usuaris" },
-          { href: "/admin/audit-log", label: "Auditoria" },
-        ]
-      : []),
   ];
+  const adminItems = [
+    { href: "/admin/users", label: "Usuaris" },
+    { href: "/admin/audit-log", label: "Auditoria" },
+  ];
+  const esAdmin = session.user.role === "ADMIN";
+  const totsElsLinks = [...links, ...(esAdmin ? adminItems : [])];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -45,8 +46,8 @@ export default async function PrivateLayout({
             AppDental
           </Link>
 
-          <nav className="hidden xl:flex items-center gap-6">
-            {navLinks.map((l) => (
+          <nav className="hidden lg:flex items-center gap-6">
+            {links.map((l) => (
               <NavLink
                 key={l.href}
                 href={l.href}
@@ -55,10 +56,11 @@ export default async function PrivateLayout({
                 activeClassName="text-foreground font-semibold"
               />
             ))}
+            {esAdmin && <NavDropdown label="Admin" items={adminItems} />}
           </nav>
 
           <div className="flex items-center gap-4">
-            <MobileNav links={navLinks} />
+            <MobileNav links={totsElsLinks} />
             <UserMenu email={session.user.email} />
           </div>
         </div>
