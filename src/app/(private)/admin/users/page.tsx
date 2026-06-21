@@ -65,7 +65,7 @@ export default async function UsersPage({
       </form>
 
       <div className="rounded-lg border bg-card">
-        <Table>
+        <Table className="min-w-180">
           <TableHeader>
             <TableRow>
               <TableHead>Nom</TableHead>

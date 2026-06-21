@@ -138,7 +138,7 @@ export default async function InventariPage({
       </form>
 
       <div className="rounded-lg border bg-card">
-        <Table>
+        <Table className="min-w-205">
           <TableHeader>
             <TableRow>
               <TableHead>Núm.</TableHead>

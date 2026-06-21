@@ -249,7 +249,7 @@ export default async function DespesesPage({
       </form>
 
       <div className="rounded-lg border bg-card">
-        <Table>
+        <Table className="min-w-205">
           <TableHeader>
             <TableRow>
               <TableHead>Data factura</TableHead>

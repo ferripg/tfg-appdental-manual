@@ -4,6 +4,9 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { logoutAction } from "./actions";
+import { MobileNav } from "./mobile-nav";
+import { NavLink } from "./nav-link";
+import pkg from "../../../package.json";
 
 export default async function PrivateLayout({
   children,
@@ -16,10 +19,25 @@ export default async function PrivateLayout({
 
   if (!session) redirect("/login");
 
+  const navLinks = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/despeses", label: "Despeses" },
+    { href: "/proveidors", label: "Proveïdors" },
+    { href: "/tipus-despesa", label: "Tipus de despesa" },
+    { href: "/inventari", label: "Inventari" },
+    { href: "/amortitzacions", label: "Amortitzacions" },
+    ...(session.user.role === "ADMIN"
+      ? [
+          { href: "/admin/users", label: "Usuaris" },
+          { href: "/admin/audit-log", label: "Auditoria" },
+        ]
+      : []),
+  ];
+
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b bg-background">
-        <div className="container mx-auto flex items-center justify-between h-16 px-6">
+      <header className="relative border-b bg-background">
+        <div className="mx-auto w-full max-w-384 flex items-center justify-between h-16 px-6">
           <Link
             href="/dashboard"
             className="text-xl font-semibold text-primary tracking-tight"
@@ -27,62 +45,20 @@ export default async function PrivateLayout({
             AppDental
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6">
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/despeses"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Despeses
-            </Link>
-            <Link
-              href="/proveidors"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Proveïdors
-            </Link>
-            <Link
-              href="/tipus-despesa"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Tipus de despesa
-            </Link>
-            <Link
-              href="/inventari"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Inventari
-            </Link>
-            <Link
-              href="/amortitzacions"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Amortitzacions
-            </Link>
-            {session.user.role === "ADMIN" && (
-              <Link
-                href="/admin/users"
+          <nav className="hidden xl:flex items-center gap-6">
+            {navLinks.map((l) => (
+              <NavLink
+                key={l.href}
+                href={l.href}
+                label={l.label}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Usuaris
-              </Link>
-            )}
-            {session.user.role === "ADMIN" && (
-              <Link
-                href="/admin/audit-log"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Auditoria
-              </Link>
-            )}
+                activeClassName="text-foreground font-semibold"
+              />
+            ))}
           </nav>
 
           <div className="flex items-center gap-4">
+            <MobileNav links={navLinks} />
             <span className="text-sm text-muted-foreground hidden sm:inline">
               {session.user.email}
             </span>
@@ -95,7 +71,16 @@ export default async function PrivateLayout({
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-6 py-8">{children}</main>
+      <main className="flex-1 mx-auto w-full max-w-384 px-6 py-8">{children}</main>
+
+      <footer className="border-t bg-background">
+        <div className="mx-auto w-full max-w-384 flex flex-col gap-1 px-6 py-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <span>AppDental · Gestió de clínica dental</span>
+          <span>
+            v{pkg.version} · © {new Date().getFullYear()}
+          </span>
+        </div>
+      </footer>
     </div>
   );
 }

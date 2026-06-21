@@ -118,7 +118,7 @@ export default async function AuditLogPage({
       </form>
 
       <div className="rounded-lg border bg-card">
-        <Table>
+        <Table className="min-w-180">
           <TableHeader>
             <TableRow>
               <TableHead>Data</TableHead>

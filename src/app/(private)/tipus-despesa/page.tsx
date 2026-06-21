@@ -83,7 +83,7 @@ export default async function TipusDespesaPage({
       </form>
 
       <div className="rounded-lg border bg-card">
-        <Table>
+        <Table className="min-w-195">
           <TableHeader>
             <TableRow>
               <TableHead>Codi</TableHead>

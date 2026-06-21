@@ -80,7 +80,7 @@ export default async function ProveidorsPage({
       </form>
 
       <div className="rounded-lg border bg-card">
-        <Table>
+        <Table className="min-w-180">
           <TableHeader>
             <TableRow>
               <TableHead>NIF</TableHead>
