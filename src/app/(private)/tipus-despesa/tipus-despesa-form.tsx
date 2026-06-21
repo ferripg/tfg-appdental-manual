@@ -17,6 +17,7 @@ import {
   updateTipusDespesa,
   type FormState,
 } from "./actions";
+import { GRUPS_PGC } from "@/lib/pgc";
 
 type Props = {
   mode: "create" | "edit" | "view";
@@ -70,13 +71,25 @@ export function TipusDespesaForm({ mode, initialData }: Props) {
           <CardTitle>Classificació comptable</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field
-            id="grup"
-            label="Grup (1-9)"
-            type="number"
-            defaultValue={initialData?.grup?.toString() ?? ""}
-            errors={state.errors?.grup}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="grup">Grup PGC</Label>
+            <select
+              id="grup"
+              name="grup"
+              defaultValue={initialData?.grup?.toString() ?? ""}
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
+            >
+              <option value="">—</option>
+              {GRUPS_PGC.map((g) => (
+                <option key={g.num} value={g.num}>
+                  {g.num} — {g.nom}
+                </option>
+              ))}
+            </select>
+            {state.errors?.grup && (
+              <p className="text-sm text-destructive">{state.errors.grup[0]}</p>
+            )}
+          </div>
           <Field
             id="concepte"
             label="Concepte"

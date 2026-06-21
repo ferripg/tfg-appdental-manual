@@ -17,6 +17,9 @@ import {
   type ResultToastMap,
 } from "@/components/result-toast";
 import { deleteTipusDespesa, reactivateTipusDespesa } from "./actions";
+import { GRUPS_PGC } from "@/lib/pgc";
+
+const NOM_GRUP = new Map(GRUPS_PGC.map((g) => [g.num, g.nom]));
 
 const TOAST_MAP: ResultToastMap = {
   creat: { type: "success", text: "Tipus de despesa creat" },
@@ -121,7 +124,9 @@ export default async function TipusDespesaPage({
                     )}
                   </TableCell>
                   <TableCell>{p.concepte ?? "—"}</TableCell>
-                  <TableCell>{p.grup ?? "—"}</TableCell>
+                  <TableCell>
+                    {p.grup ? `${p.grup} — ${NOM_GRUP.get(p.grup) ?? ""}` : "—"}
+                  </TableCell>
                   <TableCell>{p.esAmortitzable ? "Sí" : "No"}</TableCell>
                   <TableCell>{p.deduible ? "Sí" : "No"}</TableCell>
                   <TableCell className="text-right">
