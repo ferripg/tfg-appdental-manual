@@ -27,6 +27,7 @@ export default async function PrivateLayout({
     { href: "/tipus-despesa", label: "Tipus de despesa" },
     { href: "/inventari", label: "Inventari" },
     { href: "/amortitzacions", label: "Amortitzacions" },
+    { href: "/informes", label: "Informes" },
   ];
   const adminItems = [
     { href: "/admin/users", label: "Usuaris" },
