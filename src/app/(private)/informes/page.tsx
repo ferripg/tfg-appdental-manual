@@ -35,34 +35,31 @@ export default async function InformesPage({
   const params = await searchParams;
   const anyActual = new Date().getFullYear();
 
-  // Període per defecte: any actual (des de l'1 de gener fins al 31 de desembre)
   const desDe = parseDateParam(params.desDe) ?? new Date(anyActual, 0, 1);
   const finsA =
     parseDateParam(params.finsA, true) ??
     new Date(anyActual, 11, 31, 23, 59, 59);
 
-  const { rows, totalGeneral } = await reportsService.informeProveidors({
+  const { proveidors, totalGeneral } = await reportsService.informeProveidors({
     desDe,
     finsA,
   });
-  const totalFactures = rows.reduce((acc, r) => acc + r.comptador, 0);
+  const periode = `${desDe.toLocaleDateString("ca-ES")} – ${finsA.toLocaleDateString("ca-ES")}`;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Informes</h1>
-          <p className="text-muted-foreground">
-            Despeses per proveïdor en un període
-          </p>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Despeses per proveïdor
+          </h1>
+          <p className="text-muted-foreground">{periode}</p>
         </div>
-        {rows.length > 0 && (
+        {proveidors.length > 0 && (
           <ExportPdfButton
-            rows={rows}
+            proveidors={proveidors}
             totalGeneral={totalGeneral}
-            totalFactures={totalFactures}
-            desDe={toInput(desDe)}
-            finsA={toInput(finsA)}
+            periode={periode}
           />
         )}
       </div>
@@ -84,53 +81,63 @@ export default async function InformesPage({
         </Button>
       </form>
 
-      <div className="rounded-lg border bg-card">
-        <Table className="min-w-160">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Proveïdor</TableHead>
-              <TableHead className="text-right">Nº factures</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead className="text-right">%</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-center text-muted-foreground py-8"
-                >
-                  No hi ha despeses en aquest període.
-                </TableCell>
-              </TableRow>
-            ) : (
-              <>
-                {rows.map((r) => (
-                  <TableRow key={r.proveidorId ?? "sense"}>
-                    <TableCell className="font-medium">{r.nom}</TableCell>
-                    <TableCell className="text-right">{r.comptador}</TableCell>
-                    <TableCell className="text-right font-mono">
-                      {eur(r.total)}
+      {proveidors.length === 0 ? (
+        <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+          No hi ha despeses en aquest període.
+        </div>
+      ) : (
+        <>
+          {proveidors.map((p, i) => (
+            <div key={i} className="rounded-lg border bg-card">
+              <div className="flex items-center justify-between border-b px-4 py-3">
+                <span className="font-semibold">{p.nom}</span>
+                <span className="text-sm text-muted-foreground">
+                  NIF {p.nif ?? "—"}
+                </span>
+              </div>
+              <Table className="min-w-160">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nº factura</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Concepte</TableHead>
+                    <TableHead>Tipus</TableHead>
+                    <TableHead className="text-right">Import</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {p.despeses.map((d) => (
+                    <TableRow key={d.id}>
+                      <TableCell className="font-mono text-sm">
+                        {d.numFactura ?? "—"}
+                      </TableCell>
+                      <TableCell>{d.data}</TableCell>
+                      <TableCell>{d.concepte ?? "—"}</TableCell>
+                      <TableCell>{d.tipus}</TableCell>
+                      <TableCell className="text-right font-mono">
+                        {eur(d.import)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="font-semibold">
+                    <TableCell colSpan={4} className="text-right">
+                      Subtotal
                     </TableCell>
-                    <TableCell className="text-right">
-                      {r.percentatge.toFixed(1)}%
+                    <TableCell className="text-right font-mono">
+                      {eur(p.subtotal)}
                     </TableCell>
                   </TableRow>
-                ))}
-                <TableRow className="font-semibold">
-                  <TableCell>Total</TableCell>
-                  <TableCell className="text-right">{totalFactures}</TableCell>
-                  <TableCell className="text-right font-mono">
-                    {eur(totalGeneral)}
-                  </TableCell>
-                  <TableCell className="text-right">100%</TableCell>
-                </TableRow>
-              </>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                </TableBody>
+              </Table>
+            </div>
+          ))}
+
+          <div className="flex items-center justify-end gap-3 rounded-lg border bg-card px-4 py-3">
+            <span className="font-semibold">Total general</span>
+            <span className="font-mono font-semibold">{eur(totalGeneral)}</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
