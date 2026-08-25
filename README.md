@@ -1,48 +1,42 @@
-# AppDental (TFG) - Repositori Manual
+# AppDental — versió manual (TFG)
 
-Aquest és el codi font pertanyent a la referència de programació manual del Treball de Final de Grau per al sistema de gestió clínica **AppDental**. Tota l'arquitectura està unificada en un monorepo combinant els serveis de xarxa en un Clúster de contenidors locals.
+Aplicació de gestió administrativa per a una clínica dental. Versió feta a mà, sense IA
+agèntica, per a l'estudi comparatiu del TFG. La versió assistida és a `tfg-appdental-ia`.
 
-## 🛠 Requisits del Sistema
-Abans de descarregar i començar a treballar, assegureu-vos de tenir instal·lat:
-- **Docker i Docker Compose** (Per als gestors PostgreSQL i MinIO S3).
-- **Node.js LTS (v24)** (Recomanat per interactuar amb la consola Prisma local).
-- **Git**
+Stack: Next.js 16, TypeScript, Prisma 7 + PostgreSQL, Better Auth, MinIO i Docker.
 
-## 🚀 Arrencada de l'Entorn de Desenvolupament
+## Requisits
 
-L'aplicació està completament orquestrada en contenidors (Base de Dades, Object Storage, Reverse Proxy web i App). Per posar-la en marxa des de zero:
+- Docker i Docker Compose
+- Node.js 24
+- Git
 
-### 1. Variables d'Entorn
-L'entorn exigeix un arxiu invisible amb les claus directives a l'arrel de la carpeta anomenat `.env`. 
-*(Per motius de seguretat no figura a Github. Demaneu l'accés al .env.example i importeu la Base de Dades i l'Adreça Minio pròpia).*
-
-### 2. Construcció del Clúster (Docker)
-Des de la terminal, en l'arrel de projecte (`tfg-appdental-manual`), descarregueu i engegueu totes les imatges preconfigurades del fitxer `docker-compose.yml`:
+## Engegar des de zero
 
 ```bash
-docker compose up -d
-```
-Docker crearà els Volums Persistents pel vostre ordinador de manera que en el futur no perdrà dades encara que apagueu en sec.
+git clone <url-del-repositori>
+cd tfg-appdental-manual
 
-### 3. Migracions Inicials (ORM Prisma)
-Per assegurar que el PostgreSQL verge de Docker entén els taules mèdiques i per sincronitzar estats, cal instal·lar depèndencies locals de Node i tirar la comunicació d'Esquema:
+cp .env.example .env
+# omple les contrasenyes buides del .env (i posa la de Postgres també a DATABASE_URL)
 
-```bash
+docker compose up -d          # Postgres, MinIO, app i reverse proxy
 npm install
-npx prisma migrate dev --name init
+npx prisma migrate dev        # crea les taules
+npx tsx prisma/seed.ts        # crea l'usuari admin (SEED_ADMIN_* del .env)
 ```
 
-### 4. Accés als Serveis Locals
-Un cop les migracions han resolt favorablement, tota la xarxa estarà operativa. Com que treballem darrere d'un Proxy NGINX per gestionar asincronia:
+App a http://localhost i consola de MinIO a http://localhost:9001. Entra amb el correu i la
+contrasenya que hagis posat a `SEED_ADMIN_EMAIL` i `SEED_ADMIN_PASSWORD`.
 
-- **AppDental Client (FrontEnd):** [http://localhost](http://localhost) (Port Obert Web a NGINX).
-- **Servidor de Radiografies (MinIO):** [http://localhost/minio/](http://localhost/minio/) o `localhost:9001` (Credencials via .env).
-- **Taules Mèdiques Vives (Prisma Studio):** Executa `npx prisma studio` a la teva consola. Normalment s'obre per defecte a `http://localhost:5555`.
+Per aturar-ho tot: `docker compose down`.
 
----
+## Estructura
 
-### Manteniment Rutinari d'Apagada
-Per no castigar el portàtil al deixar de programar ni consumir ports secundaris (Resta de Sprints):
-```bash
-docker compose down
-```
+- `app/`: pàgines (Server Components) i server actions
+- `components/`: interfície (shadcn/ui)
+- `services/`: lògica de negoci
+- `repositories/`: accés a dades, l'únic lloc que toca Prisma
+- `schemas/`: validació amb Zod
+- `lib/`: Better Auth, permisos per rols i MinIO
+- `proxy.ts`: filtre d'autenticació abans de cada petició
