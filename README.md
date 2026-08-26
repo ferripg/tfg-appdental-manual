@@ -23,7 +23,7 @@ cp .env.example .env
 docker compose up -d          # Postgres, MinIO, app i reverse proxy
 npm install
 npx prisma migrate dev        # crea les taules
-npx tsx prisma/seed.ts        # crea l'usuari admin (SEED_ADMIN_* del .env)
+npm run seed:admin            # crea l'usuari admin (SEED_ADMIN_* del .env)
 ```
 
 App a http://localhost i consola de MinIO a http://localhost:9001. Entra amb el correu i la
