@@ -23,12 +23,17 @@ cp .env.example .env
 Omple el `.env` abans de continuar. Docker Compose llegeix aquest fitxer, així que si hi
 falta alguna variable els contenidors no arrencaran bé:
 
-- `POSTGRES_PASSWORD` i `MINIO_ROOT_PASSWORD`: tria'n les que vulguis (MinIO en demana 8
-  caràcters com a mínim).
-- `DATABASE_URL`: substitueix `<PASSWORD_BD>` per la mateixa contrasenya de Postgres.
+- `POSTGRES_PASSWORD` i `MINIO_ROOT_PASSWORD`: tria'n unes de llargues i **només amb
+  lletres, números, `-` i `_`**. Res de `@`, `:`, `/` o `#`: la de Postgres va dins del
+  `DATABASE_URL`, i aquests caràcters trenquen la URL de connexió. Per generar-ne una:
+  `openssl rand -base64 24 | tr '+/' '-_'`.
+- `DATABASE_URL`: substitueix `<PASSWORD_BD>` per **exactament** la mateixa contrasenya que
+  has posat a `POSTGRES_PASSWORD`. Si les dues no coincideixen, `prisma migrate dev` falla
+  amb `P1000: Authentication failed against database server`.
 - `BETTER_AUTH_SECRET`: **mínim 32 caràcters aleatoris**, genera'l amb
   `openssl rand -base64 32` (si en poses un de curt, Better Auth avisa a cada petició).
-- `SEED_ADMIN_PASSWORD`: la contrasenya amb què entraràs a l'aplicació.
+- `SEED_ADMIN_PASSWORD`: la contrasenya amb què entraràs a l'aplicació. No la deixis buida
+  o el `seed:admin` petarà.
 - Les variables `MINIO_ENDPOINT`, `MINIO_PORT` i `MINIO_USE_SSL` deixa-les tal com venen:
   serveixen per executar scripts des del teu ordinador. Dins de Docker, el `compose` ja les
   reescriu perquè apuntin al contenidor `minio`.
@@ -37,15 +42,15 @@ falta alguna variable els contenidors no arrencaran bé:
 docker compose up -d --build   # Postgres, MinIO, app i reverse proxy
 npm install
 npx prisma migrate dev         # crea les taules
+npx prisma generate            # genera el client tipat de Prisma
 npm run seed:admin             # crea l'usuari admin (SEED_ADMIN_* del .env)
 ```
 
 L'aplicació és a http://localhost i la consola de MinIO a http://localhost:9001. Entra amb
 el correu i la contrasenya de `SEED_ADMIN_EMAIL` i `SEED_ADMIN_PASSWORD`.
 
-Un últim pas: entra a la consola de MinIO amb `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` i
-crea el bucket **`factures`**. Sense aquest bucket, les factures de les despeses no es
-poden pujar.
+El bucket `factures` de MinIO es crea sol la primera vegada que es puja una factura, no
+cal tocar res a la consola.
 
 Per aturar-ho tot: `docker compose down` (afegeix `-v` si també vols esborrar les dades de
 Postgres i MinIO i tornar a començar de zero).
@@ -57,9 +62,17 @@ Postgres i MinIO i tornar a començar de zero).
   `docker compose build --no-cache nextjs` per veure l'error complet.
 - **Ports ocupats** (80, 5432, 9000, 9001): atura el que els estigui fent servir o canvia
   el port de l'esquerra al `docker-compose.yml`.
-- **`npx prisma migrate dev` no connecta**: el contenidor `denta-postgres` ha d'estar
-  aixecat i el `DATABASE_URL` del `.env` ha d'apuntar a `localhost:5432` amb la contrasenya
-  correcta. Comprova l'estat amb `docker compose ps`.
+- **`P1000: Authentication failed` a `prisma migrate dev`**: la contrasenya del
+  `DATABASE_URL` no és la mateixa que la de `POSTGRES_PASSWORD`. Compte, però: Postgres
+  només llegeix `POSTGRES_PASSWORD` **el primer cop que crea la base de dades**. Si la
+  canvies quan el volum ja existeix, cal recrear-lo perquè faci efecte:
+  `docker compose down -v && docker compose up -d` (això esborra les dades, així que
+  després toca tornar a fer `prisma migrate dev` i `seed:admin`).
+- **`Cannot find module '.prisma/client/default'`**: et falta `npx prisma generate`.
+- **No facis `npm audit fix --force`**: vol pujar Next fora del rang declarat i `better-auth`
+  a la 1.7, que canvia l'esquema de la taula `account` i trenca el login. El `better-auth`
+  està fixat a `~1.6.30` a posta: ja té els avisos de seguretat tapats sense el canvi
+  d'esquema. Un `npm audit fix` normal (sense `--force`) sí que és segur.
 
 ## Estructura
 
