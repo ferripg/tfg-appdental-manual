@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { minioClient, BUCKET_FACTURES } from "@/lib/minio-client";
+import { getMinioClient, BUCKET_FACTURES } from "@/lib/minio-client";
 
 export async function uploadFactura(
   buffer: Buffer,
@@ -9,7 +9,7 @@ export async function uploadFactura(
   const extension = originalFilename.split(".").pop() ?? "pdf";
   const fitxerKey = `${randomUUID()}.${extension}`;
 
-  await minioClient.putObject(
+  await getMinioClient().putObject(
     BUCKET_FACTURES,
     fitxerKey,
     buffer,
@@ -21,7 +21,7 @@ export async function uploadFactura(
 
 export async function getPresignedUrl(fitxerKey: string): Promise<string> {
   const expirySeconds = 15 * 60;
-  return minioClient.presignedGetObject(
+  return getMinioClient().presignedGetObject(
     BUCKET_FACTURES,
     fitxerKey,
     expirySeconds,
@@ -29,5 +29,5 @@ export async function getPresignedUrl(fitxerKey: string): Promise<string> {
 }
 
 export async function deleteFactura(fitxerKey: string): Promise<void> {
-  await minioClient.removeObject(BUCKET_FACTURES, fitxerKey);
+  await getMinioClient().removeObject(BUCKET_FACTURES, fitxerKey);
 }
