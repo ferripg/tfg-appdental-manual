@@ -26,12 +26,13 @@ falta alguna variable els contenidors no arrencaran bé:
 - `POSTGRES_PASSWORD` i `MINIO_ROOT_PASSWORD`: tria'n unes de llargues i **només amb
   lletres, números, `-` i `_`**. Res de `@`, `:`, `/` o `#`: la de Postgres va dins del
   `DATABASE_URL`, i aquests caràcters trenquen la URL de connexió. Per generar-ne una:
-  `openssl rand -base64 24 | tr '+/' '-_'`.
+  `node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"`.
 - `DATABASE_URL`: substitueix `<PASSWORD_BD>` per **exactament** la mateixa contrasenya que
   has posat a `POSTGRES_PASSWORD`. Si les dues no coincideixen, `prisma migrate dev` falla
   amb `P1000: Authentication failed against database server`.
 - `BETTER_AUTH_SECRET`: **mínim 32 caràcters aleatoris**, genera'l amb
-  `openssl rand -base64 32` (si en poses un de curt, Better Auth avisa a cada petició).
+  `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`
+  (si en poses un de curt, Better Auth avisa a cada petició).
 - `SEED_ADMIN_PASSWORD`: la contrasenya amb què entraràs a l'aplicació. No la deixis buida
   o el `seed:admin` petarà.
 - Les variables `MINIO_ENDPOINT`, `MINIO_PORT` i `MINIO_USE_SSL` deixa-les tal com venen:
