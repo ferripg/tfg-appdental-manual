@@ -45,10 +45,33 @@ npm install
 npx prisma migrate dev         # crea les taules
 npx prisma generate            # genera el client tipat de Prisma
 npm run seed:admin             # crea l'usuari admin (SEED_ADMIN_* del .env)
+npm run seed:demo              # opcional: omple l'app amb dades de prova
 ```
 
 L'aplicació és a http://localhost i la consola de MinIO a http://localhost:9001. Entra amb
 el correu i la contrasenya de `SEED_ADMIN_EMAIL` i `SEED_ADMIN_PASSWORD`.
+
+### Dades de prova
+
+`npm run seed:demo` omple l'aplicació amb tres anys de moviments d'una clínica
+fictícia: uns 190 apunts de despesa, 10 proveïdors, 13 tipus de despesa, 8 béns
+d'inventari amb les seves amortitzacions ja calculades i un registre d'auditoria.
+Algunes despeses porten la factura en PDF adjunta.
+
+Les amortitzacions de l'exercici en curs es deixen **sense generar** a posta, perquè
+es puguin generar des de la pantalla d'amortitzacions i veure com funciona.
+
+A més de l'admin, crea tres usuaris per provar els permisos de cada rol
+(contrasenya `Demo1234-clinica`):
+
+| Usuari | Rol | |
+|---|---|---|
+| `gestora@clinica.test` | MANAGER | CRUD complet, exports i amortitzacions |
+| `recepcio@clinica.test` | OPERARI | només crear despeses i consultar llistats |
+| `auxiliar@clinica.test` | OPERARI | desactivat, per veure com es bloqueja l'accés |
+
+Es pot tornar a executar tantes vegades com calgui: esborra les dades de domini
+(incloent-hi els PDFs de MinIO) i les torna a generar igual, sense tocar els usuaris.
 
 El bucket `factures` de MinIO es crea sol la primera vegada que es puja una factura, no
 cal tocar res a la consola.
